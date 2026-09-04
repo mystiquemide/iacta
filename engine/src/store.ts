@@ -60,6 +60,14 @@ export interface RefusalRecord {
   occurredAt?: string;
 }
 
+export interface EventSnapshot {
+  rounds: RoundRecord[];
+  orders: OrderRecord[];
+  fills: FillRecord[];
+  redemptions: RedemptionRecord[];
+  refusals: RefusalRecord[];
+}
+
 const DEFAULT_DB_PATH = fileURLToPath(new URL("../data/iacta.db", import.meta.url));
 
 function nowIso(): string {
@@ -213,6 +221,133 @@ export class EventStore {
         (SELECT COUNT(*) FROM refusals) AS refusals
     `).get() as { rounds: number; orders: number; fills: number; redemptions: number; refusals: number };
     return row;
+  }
+
+  snapshot(): EventSnapshot {
+    const rounds = this.db.prepare(`
+      SELECT market_id, symbol, asset, status, trading_start, expiry, venue_id, pool_address
+      FROM rounds
+      ORDER BY created_at ASC
+    `).all() as {
+      market_id: string;
+      symbol: string;
+      asset: string;
+      status: RoundStatus;
+      trading_start: number;
+      expiry: number;
+      venue_id: string | null;
+      pool_address: string;
+    }[];
+    const orders = this.db.prepare(`
+      SELECT market_id, agent_id, pool_address, side, order_type, status, price, quantity,
+             expire_timestamp_ns, tx_hash, occurred_at
+      FROM orders
+      ORDER BY occurred_at ASC, id ASC
+    `).all() as {
+      market_id: string;
+      agent_id: string;
+      pool_address: string;
+      side: string;
+      order_type: string;
+      status: string;
+      price: string;
+      quantity: string;
+      expire_timestamp_ns: string;
+      tx_hash: string;
+      occurred_at: string;
+    }[];
+    const fills = this.db.prepare(`
+      SELECT market_id, agent_id, pool_address, side, price, quantity, tx_hash, fill_path, occurred_at
+      FROM fills
+      ORDER BY occurred_at ASC, id ASC
+    `).all() as {
+      market_id: string;
+      agent_id: string;
+      pool_address: string;
+      side: string;
+      price: string;
+      quantity: string;
+      tx_hash: string;
+      fill_path: FillRecord["fillPath"];
+      occurred_at: string;
+    }[];
+    const redemptions = this.db.prepare(`
+      SELECT market_id, agent_id, proceeds, outcome, tx_hash, occurred_at
+      FROM redemptions
+      ORDER BY occurred_at ASC, id ASC
+    `).all() as {
+      market_id: string;
+      agent_id: string;
+      proceeds: string;
+      outcome: string;
+      tx_hash: string;
+      occurred_at: string;
+    }[];
+    const refusals = this.db.prepare(`
+      SELECT market_id, agent_id, reason, status, tx_hash, occurred_at
+      FROM refusals
+      ORDER BY occurred_at ASC, id ASC
+    `).all() as {
+      market_id: string;
+      agent_id: string;
+      reason: string;
+      status: RefusalRecord["status"];
+      tx_hash: string | null;
+      occurred_at: string;
+    }[];
+
+    return {
+      rounds: rounds.map((row) => ({
+        marketId: row.market_id,
+        symbol: row.symbol,
+        asset: row.asset,
+        status: row.status,
+        tradingStart: row.trading_start,
+        expiry: row.expiry,
+        venueId: row.venue_id,
+        poolAddress: row.pool_address,
+      })),
+      orders: orders.map((row) => ({
+        marketId: row.market_id,
+        agentId: row.agent_id,
+        poolAddress: row.pool_address,
+        side: row.side,
+        orderType: row.order_type,
+        status: row.status,
+        price: row.price,
+        quantity: row.quantity,
+        expireTimestampNs: row.expire_timestamp_ns,
+        txHash: row.tx_hash,
+        occurredAt: row.occurred_at,
+      })),
+      fills: fills.map((row) => ({
+        marketId: row.market_id,
+        agentId: row.agent_id,
+        poolAddress: row.pool_address,
+        side: row.side,
+        price: row.price,
+        quantity: row.quantity,
+        txHash: row.tx_hash,
+        fillPath: row.fill_path,
+        occurredAt: row.occurred_at,
+      })),
+      redemptions: redemptions.map((row) => ({
+        marketId: row.market_id,
+        agentId: row.agent_id,
+        proceeds: row.proceeds,
+        outcome: row.outcome,
+        txHash: row.tx_hash,
+        occurredAt: row.occurred_at,
+      })),
+      refusals: refusals.map((row) => ({
+        marketId: row.market_id,
+        agentId: row.agent_id,
+        reason: row.reason,
+        status: row.status,
+        txHash: row.tx_hash,
+        occurredAt: row.occurred_at,
+      })),
+    };
   }
 
   close(): void {

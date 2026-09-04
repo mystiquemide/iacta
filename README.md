@@ -19,6 +19,12 @@ To inspect the live Shannon markets and order books without a signer:
 npm run engine:doctor
 ```
 
+To run the deterministic engine and restart-safety tests:
+
+```bash
+npm run engine:test
+```
+
 To create the five local burner wallets used by the engine, run `npm run engine:wallets`. It writes addresses and private keys to the ignored `engine/.env.local` file and never prints private keys.
 
 To add one isolated burner without rotating the existing set, run `npm run engine:fresh-wallet`.
