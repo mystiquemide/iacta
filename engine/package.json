@@ -6,6 +6,7 @@
   "scripts": {
     "doctor": "tsx src/doctor.ts",
     "wallets": "tsx src/generate-wallets.ts",
+    "fresh-wallet": "tsx src/generate-fresh-wallet.ts",
     "fund": "tsx src/fund-collateral.ts",
     "killtest:a": "tsx src/killtest-a.ts",
     "typecheck": "tsc --noEmit",

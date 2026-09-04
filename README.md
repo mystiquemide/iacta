@@ -21,6 +21,8 @@ npm run engine:doctor
 
 To create the five local burner wallets used by the engine, run `npm run engine:wallets`. It writes addresses and private keys to the ignored `engine/.env.local` file and never prints private keys.
 
+To add one isolated burner without rotating the existing set, run `npm run engine:fresh-wallet`.
+
 After the SECUTOR burner has testnet STT for gas, fund its test collateral and run the first IOC kill-test:
 
 ```bash

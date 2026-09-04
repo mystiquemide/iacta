@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "engine:doctor": "npm --workspace engine run doctor",
     "engine:wallets": "npm --workspace engine run wallets",
+    "engine:fresh-wallet": "npm --workspace engine run fresh-wallet",
     "engine:fund": "npm --workspace engine run fund",
     "engine:killtest:a": "npm --workspace engine run killtest:a"
   },
