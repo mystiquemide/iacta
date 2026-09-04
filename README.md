@@ -30,6 +30,13 @@ IACTA_FUND_ROLES=SECUTOR npm run engine:fund
 npm run engine:killtest:a
 ```
 
+To fund the isolated fallback burner and run the opposing-wallet crossing proof:
+
+```bash
+IACTA_FUND_ROLES=FRESH npm run engine:fund
+npm run engine:crossing
+```
+
 The doctor reads public indexer and chain data and stores discovered rounds in the local SQLite database at `engine/data/iacta.db`. Copy `.env.example` when changing public endpoints. Burner keys are required only for engine writes and must stay in the VPS environment.
 
 ## Repository layout

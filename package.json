@@ -16,7 +16,8 @@
     "engine:wallets": "npm --workspace engine run wallets",
     "engine:fresh-wallet": "npm --workspace engine run fresh-wallet",
     "engine:fund": "npm --workspace engine run fund",
-    "engine:killtest:a": "npm --workspace engine run killtest:a"
+    "engine:killtest:a": "npm --workspace engine run killtest:a",
+    "engine:crossing": "npm --workspace engine run crossing"
   },
   "dependencies": {
     "next": "16.3.4",

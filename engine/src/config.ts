@@ -14,7 +14,8 @@ export const TESTNET_COLLATERAL = SOMNIA_TESTNET_ADDRESSES.collateral;
 export const WALLET_ENV_PATH = fileURLToPath(new URL("../.env.local", import.meta.url));
 
 export const WALLET_ROLES = ["OPS", "RETIARIUS", "SECUTOR", "THRAEX", "MURMILLO"] as const;
-export type WalletRole = (typeof WALLET_ROLES)[number];
+export const FUNDABLE_WALLET_ROLES = [...WALLET_ROLES, "FRESH"] as const;
+export type WalletRole = (typeof FUNDABLE_WALLET_ROLES)[number];
 
 function unquote(value: string): string {
   if (value.length >= 2 && ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'")))) {

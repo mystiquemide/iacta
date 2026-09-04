@@ -9,6 +9,7 @@
     "fresh-wallet": "tsx src/generate-fresh-wallet.ts",
     "fund": "tsx src/fund-collateral.ts",
     "killtest:a": "tsx src/killtest-a.ts",
+    "crossing": "tsx src/crossing.ts",
     "typecheck": "tsc --noEmit",
     "build": "tsc"
   },

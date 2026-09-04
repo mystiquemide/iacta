@@ -1,6 +1,7 @@
 import { EventStore } from "./store.js";
 import {
   EXPLORER_URL,
+  FUNDABLE_WALLET_ROLES,
   TESTNET_COLLATERAL,
   WALLET_ROLES,
   addressFor,
@@ -13,7 +14,7 @@ import {
 function selectedRoles(): WalletRole[] {
   const configured = process.env.IACTA_FUND_ROLES?.split(",").map((value) => value.trim().toUpperCase()).filter(Boolean);
   const roles = configured?.length ? configured : [...WALLET_ROLES];
-  const unknown = roles.filter((role) => !WALLET_ROLES.includes(role as WalletRole));
+  const unknown = roles.filter((role) => !FUNDABLE_WALLET_ROLES.includes(role as WalletRole));
   if (unknown.length > 0) throw new Error(`Unknown wallet role(s): ${unknown.join(", ")}`);
   return roles as WalletRole[];
 }
