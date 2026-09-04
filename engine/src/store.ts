@@ -67,7 +67,7 @@ function nowIso(): string {
 }
 
 function jsonOrEmpty(value: unknown): string {
-  return JSON.stringify(value ?? {});
+  return JSON.stringify(value ?? {}, (_key, nested) => typeof nested === "bigint" ? nested.toString() : nested);
 }
 
 export class EventStore {
