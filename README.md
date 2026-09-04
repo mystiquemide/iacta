@@ -19,6 +19,15 @@ To inspect the live Shannon markets and order books without a signer:
 npm run engine:doctor
 ```
 
+To create the five local burner wallets used by the engine, run `npm run engine:wallets`. It writes addresses and private keys to the ignored `engine/.env.local` file and never prints private keys.
+
+After the SECUTOR burner has testnet STT for gas, fund its test collateral and run the first IOC kill-test:
+
+```bash
+IACTA_FUND_ROLES=SECUTOR npm run engine:fund
+npm run engine:killtest:a
+```
+
 The doctor reads public indexer and chain data and stores discovered rounds in the local SQLite database at `engine/data/iacta.db`. Copy `.env.example` when changing public endpoints. Burner keys are required only for engine writes and must stay in the VPS environment.
 
 ## Repository layout

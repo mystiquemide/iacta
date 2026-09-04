@@ -5,12 +5,16 @@
   "type": "module",
   "scripts": {
     "doctor": "tsx src/doctor.ts",
+    "wallets": "tsx src/generate-wallets.ts",
+    "fund": "tsx src/fund-collateral.ts",
+    "killtest:a": "tsx src/killtest-a.ts",
     "typecheck": "tsc --noEmit",
     "build": "tsc"
   },
   "dependencies": {
     "@somnia-chain/markets-sdk": "0.29.0",
-    "better-sqlite3": "^12.4.1"
+    "better-sqlite3": "^12.4.1",
+    "viem": "^2.56.3"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",

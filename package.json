@@ -12,7 +12,10 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "engine:doctor": "npm --workspace engine run doctor"
+    "engine:doctor": "npm --workspace engine run doctor",
+    "engine:wallets": "npm --workspace engine run wallets",
+    "engine:fund": "npm --workspace engine run fund",
+    "engine:killtest:a": "npm --workspace engine run killtest:a"
   },
   "dependencies": {
     "next": "16.3.4",
