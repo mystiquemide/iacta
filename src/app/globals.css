@@ -126,28 +126,6 @@
   }
 }
 
-/* Stats marquee */
-@keyframes scroll-left {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-.marquee-track {
-  display: flex;
-  width: max-content;
-  animation: scroll-left 40s linear infinite;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .marquee-track {
-    animation: none;
-  }
-}
-
 /* Hero image reveal */
 @keyframes mountain-reveal {
   from {

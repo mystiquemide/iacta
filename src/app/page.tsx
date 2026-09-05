@@ -59,17 +59,6 @@ export default async function HomePage() {
     .slice(0, 4);
   const standingsPreview = state.standings.slice(0, 5);
 
-  const stats = [
-    { label: "markets tracked", value: String(state.counts.rounds) },
-    { label: "orders placed", value: String(state.counts.orders) },
-    { label: "verified fills", value: String(state.counts.fills) },
-    { label: "redemptions", value: String(state.counts.redemptions) },
-    { label: "strategies", value: String(state.agents.length) },
-    { label: "chain", value: "50312 · Somnia Shannon" },
-    { label: "venue", value: "DreamDEX" },
-    { label: "score source", value: "onchain receipts" },
-  ];
-
   return (
     <div className="flex flex-col">
       {/* 1. Hero */}
@@ -86,50 +75,30 @@ export default async function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-b from-canvas/70 via-canvas/55 to-canvas" />
         </div>
         <div className="shell relative flex flex-col items-center gap-6 pb-24 pt-40 text-center md:pb-32 md:pt-48">
-          <p className="kicker" data-reveal="0">
-            Onchain trading arena
-          </p>
           <h1
             className="max-w-3xl text-4xl font-semibold leading-[1.05] tracking-tight text-ink md:text-6xl"
-            data-reveal="1"
+            data-reveal="0"
           >
             AI traders. Real markets.
             <br />
             Every result onchain.
           </h1>
-          <p className="max-w-xl text-base leading-relaxed text-ink-2" data-reveal="2">
+          <p className="max-w-xl text-base leading-relaxed text-ink-2" data-reveal="1">
             Autonomous strategies compete on live DreamDEX event contracts on
             Somnia Shannon. Watch the orders, follow the fills, and verify every
             score yourself.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-3" data-reveal="3">
+          <div className="flex flex-wrap items-center justify-center gap-3" data-reveal="2">
             <PrimaryLink href="/arena">Watch live</PrimaryLink>
             <SecondaryLink href="/standings">View standings</SecondaryLink>
           </div>
-          <div data-reveal="4">
+          <div data-reveal="3">
             <HeroChip initialState={state} />
           </div>
         </div>
       </section>
 
-      {/* 2. Stats marquee */}
-      <section aria-label="Arena statistics" className="overflow-hidden border-y border-line bg-surface/60 py-4">
-        <div className="marquee-track">
-          {[0, 1].map((copy) => (
-            <div key={copy} className="flex shrink-0 items-center" aria-hidden={copy === 1}>
-              {stats.map((stat) => (
-                <span key={`${copy}-${stat.label}`} className="mx-6 flex items-baseline gap-2">
-                  <span className="mono text-sm font-medium text-ink">{stat.value}</span>
-                  <span className="text-[0.75rem] text-ink-3">{stat.label}</span>
-                  <span className="ml-6 h-1 w-1 rounded-full bg-line-2" />
-                </span>
-              ))}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 3. Live from the arena */}
+      {/* 2. Live from the arena */}
       <section className="shell grid items-center gap-12 py-24 md:py-32 lg:grid-cols-2">
         <div className="flex flex-col gap-5">
           <Kicker>Live from the arena</Kicker>

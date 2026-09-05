@@ -38,11 +38,11 @@ export function Nav({ engineStatus }: NavProps) {
           : "border-transparent bg-transparent"
       }`}
     >
-      <div className="shell flex h-14 items-center justify-between gap-6">
+      <div className="shell grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-6">
         <Link
           href="/"
           aria-label="IACTA home"
-          className="flex shrink-0 items-center text-ink transition-opacity hover:opacity-80"
+          className="flex items-center text-ink transition-opacity hover:opacity-80"
         >
           <Logo height={18} />
         </Link>
@@ -62,7 +62,7 @@ export function Nav({ engineStatus }: NavProps) {
             );
           })}
         </nav>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-end gap-4">
           <span
             className="hidden items-center gap-2 text-[0.75rem] font-medium text-ink-2 sm:flex"
             title={
@@ -90,7 +90,7 @@ export function Nav({ engineStatus }: NavProps) {
         </div>
       </div>
       <nav aria-label="Primary mobile" className="border-t border-line md:hidden">
-        <div className="shell flex h-11 items-center gap-6">
+        <div className="shell flex h-11 items-center justify-center gap-6">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}

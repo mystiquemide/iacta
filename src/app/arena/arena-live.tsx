@@ -95,7 +95,7 @@ export function ArenaLive({ initialState }: { initialState: ArenaState }) {
       <section className="flex flex-col gap-5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-4">
-            <Kicker>Arena</Kicker>
+            <h1 className="kicker">Arena</h1>
             <StatusBadge status={state.engine.status} />
             <span className="text-[0.75rem] text-ink-3">
               {streamError ? "live stream reconnecting" : "streaming · 2s"}
