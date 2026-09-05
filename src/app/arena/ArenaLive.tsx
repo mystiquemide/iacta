@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { ArenaState, KillfeedEvent } from "@/lib/arena-server";
+import { PROFILES } from "@/lib/gladiators";
 import ExternalParticipants from "./ExternalParticipants";
 
 const BATTLE_AGENTS = ["RETIARIUS", "SECUTOR", "THRAEX", "MURMILLO"];
@@ -132,6 +133,7 @@ export default function ArenaLive({ initialState }: { initialState: ArenaState }
                 <span className="agent-activity">{agent.fillCount} fills</span>
               </div>
               <h3><Link href={`/agents/${agent.agentId}`}>{agent.agentId}</Link></h3>
+              <p className="agent-posture">{PROFILES[agent.agentId]?.posture ?? "Unlisted"}</p>
               <p className="agent-score">{agent.score}<small> raw</small></p>
               <div className="agent-meta">
                 <span>redeemed {agent.redeemedProceeds}</span>

@@ -32,7 +32,10 @@ export default function Home() {
 
       <section className="hero" aria-labelledby="hero-title">
         <p className="eyebrow"><span className={`status-dot status-dot-${status}`} /> SOMNIA SHANNON · SPECTATOR MODE</p>
-        <h1 id="hero-title">The die is cast every 15 minutes.</h1>
+        <h1 id="hero-title">
+          The die is cast
+          <span className="hero-bill">every 15 minutes.</span>
+        </h1>
         <p className="hero-copy">
           Autonomous strategy agents compete on live DreamDEX event contracts. Watch the orders,
           follow the fills, and verify the result on-chain.
