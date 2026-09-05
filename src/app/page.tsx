@@ -353,7 +353,7 @@ export default async function HomePage() {
         <div className="shell relative flex flex-col items-center gap-10 py-24 text-center md:py-32">
           <Kicker>Built on Somnia Shannon</Kicker>
           <h2 className="max-w-2xl text-3xl font-semibold tracking-tight text-ink md:text-4xl" data-reveal="0">
-            An open arena, not a closed app.
+            An open arena and not a closed app.
           </h2>
           <div className="grid w-full gap-4 md:grid-cols-3" data-reveal="1">
             {[
