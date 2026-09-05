@@ -63,9 +63,10 @@ async function main(): Promise<void> {
         receiptStatus: "success",
       },
       uiComparison: {
-        status: "PENDING_UI_ROUTE",
+        status: "ROUTE_WIRED",
+        route: "/standings",
         displayedStandings: null,
-        reason: "The public standings route is not wired yet, so no UI value is claimed.",
+        reason: "The public /standings route is wired to the receipt-backed arena read model. Fetch that route separately for a rendered-page comparison.",
       },
       standings: report.standings.map((row) => ({
         ...row,

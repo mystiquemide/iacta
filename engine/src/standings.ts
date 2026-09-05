@@ -70,7 +70,7 @@ export function computeStandings(
 
   for (const fill of fills) {
     const txHash = requireTxHash(fill.txHash, "fill");
-    const quoteOne = quoteOneByMarket.get(fill.marketId);
+    const quoteOne = quoteOneByMarket.get(fill.marketId.toLowerCase());
     if (quoteOne === undefined || quoteOne <= 0n) {
       throw new Error(`missing quote scale for market ${fill.marketId}`);
     }

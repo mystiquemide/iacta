@@ -75,3 +75,15 @@ test("standings reject score inputs without transaction references", () => {
     /fill transaction hash/,
   );
 });
+
+test("standings normalize mixed-case market IDs before joining quote scales", () => {
+  const mixedCaseMarketId = `0x${"a".repeat(63)}B`;
+  const [row] = computeStandings(
+    ["SECUTOR"],
+    [{ ...fill("SECUTOR", "BUY_YES", "200000", "0xmixed"), marketId: mixedCaseMarketId }],
+    [],
+    new Map([[mixedCaseMarketId.toLowerCase(), 1_000_000n]]),
+  );
+
+  assert.equal(row?.score, "-200");
+});

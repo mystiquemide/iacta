@@ -26,7 +26,7 @@ function eventTitle(event: KillfeedEvent): string {
 }
 
 function timeLabel(value: string | null): string {
-  return value ? value.slice(11, 19) : "--:--:--";
+  return value ? `${value.slice(11, 19)} UTC` : "--:--:-- UTC";
 }
 
 function statusLabel(status: ArenaState["engine"]["status"]): string {
@@ -122,7 +122,7 @@ export default function ArenaLive({ initialState }: { initialState: ArenaState }
             <span className="panel-label">Four architectures</span>
             <h2 id="gladiators-title">GLADIATORS</h2>
           </div>
-          <span className="section-note">Scores use redeemed collateral only</span>
+          <span className="section-note">Score: redeemed + sold - bought</span>
         </div>
         <div className="agent-grid">
           {agents.map((agent, index) => (

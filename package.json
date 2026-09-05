@@ -11,6 +11,7 @@
     "dev": "next dev",
     "prebuild": "npm --workspace engine run build",
     "build": "next build",
+    "prestart": "npm --workspace engine run build",
     "start": "next start",
     "lint": "eslint",
     "pretypecheck": "npm --workspace engine run build",

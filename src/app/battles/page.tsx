@@ -62,7 +62,7 @@ export default function BattlesPage() {
           <p className="empty-state">No rounds have been recorded yet.</p>
         ) : (
           <div className="archive-list">
-            {state.rounds.map((round) => {
+            {state.rounds.map((round, index) => {
               const events = state.killfeed.filter((event) => event.marketId === round.marketId);
               const fills = events.filter((event) => event.kind === "FILL");
               const redemptions = events.filter((event) => event.kind === "REDEMPTION");
@@ -73,7 +73,7 @@ export default function BattlesPage() {
               ).entries()];
               return (
                 <article className="archive-row" key={round.marketId}>
-                  <div className="archive-index">{String(state.rounds.indexOf(round) + 1).padStart(2, "0")}</div>
+                  <div className="archive-index">{String(index + 1).padStart(2, "0")}</div>
                   <div className="archive-main">
                     <div className="archive-title-line">
                       <h3>{roundLabel(round)}</h3>

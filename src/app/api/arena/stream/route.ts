@@ -1,14 +1,10 @@
 import { readArenaState } from "@/lib/arena-server";
+import { sendSseEvent } from "@/lib/sse";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-const encoder = new TextEncoder();
 const POLL_INTERVAL_MS = 2_000;
-
-function eventPayload(event: string, data: unknown): Uint8Array {
-  return encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
-}
 
 export function GET(request: Request): Response {
   let closeStream: () => void = () => undefined;
@@ -30,11 +26,7 @@ export function GET(request: Request): Response {
 
       const send = () => {
         if (closed) return;
-        try {
-          controller.enqueue(eventPayload("arena", readArenaState()));
-        } catch {
-          controller.enqueue(eventPayload("error", { message: "Arena state is temporarily unavailable." }));
-        }
+        if (!sendSseEvent(controller, "arena", readArenaState())) close();
       };
 
       const interval = setInterval(send, POLL_INTERVAL_MS);
