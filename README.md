@@ -45,6 +45,12 @@ npm run engine:crossing
 
 After a market settles, inspect claimable positions without writing with `npm run engine:redeem-sweep -- --dry-run`. Run the same command without `--dry-run` to submit verified batch redemptions.
 
+To recompute standings from the stored tx-linked events and verify every receipt:
+
+```bash
+npm run engine:recompute-standings
+```
+
 The doctor reads public indexer and chain data and stores discovered rounds in the local SQLite database at `engine/data/iacta.db`. Copy `.env.example` when changing public endpoints. Burner keys are required only for engine writes and must stay in the VPS environment.
 
 ## Repository layout

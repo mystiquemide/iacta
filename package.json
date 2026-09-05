@@ -17,6 +17,7 @@
     "engine:fresh-wallet": "npm --workspace engine run fresh-wallet",
     "engine:fund": "npm --workspace engine run fund",
     "engine:redeem-sweep": "npm --workspace engine run redeem-sweep --",
+    "engine:recompute-standings": "npm --workspace engine run recompute-standings",
     "engine:test": "npm --workspace engine test",
     "engine:killtest:a": "npm --workspace engine run killtest:a",
     "engine:crossing": "npm --workspace engine run crossing"
