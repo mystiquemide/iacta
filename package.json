@@ -7,10 +7,13 @@
     "engine"
   ],
   "scripts": {
+    "predev": "npm --workspace engine run build",
     "dev": "next dev",
+    "prebuild": "npm --workspace engine run build",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "pretypecheck": "npm --workspace engine run build",
     "typecheck": "tsc --noEmit",
     "engine:doctor": "npm --workspace engine run doctor",
     "engine:wallets": "npm --workspace engine run wallets",

@@ -114,6 +114,7 @@ async function main(): Promise<void> {
       expiry: Number(market.expiry),
       venueId: market.venueId ?? null,
       poolAddress: market.poolAddress,
+      quoteDecimals: market.quoteDecimals,
     });
     store.recordOrder({
       marketId: market.marketId,

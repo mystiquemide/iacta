@@ -1,7 +1,6 @@
 import Database from "better-sqlite3";
 import { mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 
 export type RoundStatus = "Listed" | "Trading" | "Locked" | "Settling" | "Resolved" | "Voided" | "Finalized";
 
@@ -14,6 +13,7 @@ export interface RoundRecord {
   expiry: number;
   venueId: string | null;
   poolAddress: string;
+  quoteDecimals: number;
 }
 
 export interface FillRecord {
@@ -68,7 +68,12 @@ export interface EventSnapshot {
   refusals: RefusalRecord[];
 }
 
-const DEFAULT_DB_PATH = fileURLToPath(new URL("../data/iacta.db", import.meta.url));
+const LEGACY_QUOTE_DECIMALS = 6;
+
+function defaultDatabasePath(): string {
+  const dataRoot = process.cwd().endsWith("/engine") ? process.cwd() : resolve(process.cwd(), "engine");
+  return resolve(dataRoot, "data", "iacta.db");
+}
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -82,7 +87,7 @@ export class EventStore {
   readonly path: string;
   private readonly db: Database.Database;
 
-  constructor(path = process.env.IACTA_DB_PATH ?? DEFAULT_DB_PATH) {
+  constructor(path = process.env.IACTA_DB_PATH ?? defaultDatabasePath()) {
     this.path = resolve(path);
     mkdirSync(dirname(this.path), { recursive: true });
     this.db = new Database(this.path);
@@ -98,6 +103,7 @@ export class EventStore {
         expiry INTEGER NOT NULL,
         venue_id TEXT,
         pool_address TEXT NOT NULL,
+        quote_decimals INTEGER NOT NULL DEFAULT 6,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       );
@@ -160,13 +166,20 @@ export class EventStore {
       CREATE INDEX IF NOT EXISTS idx_redemptions_market ON redemptions (market_id, occurred_at);
       CREATE INDEX IF NOT EXISTS idx_refusals_market ON refusals (market_id, occurred_at);
     `);
+    const roundColumns = this.db.pragma("table_info(rounds)") as { name: string }[];
+    if (!roundColumns.some((column) => column.name === "quote_decimals")) {
+      this.db.exec(`ALTER TABLE rounds ADD COLUMN quote_decimals INTEGER NOT NULL DEFAULT ${LEGACY_QUOTE_DECIMALS}`);
+    }
   }
 
   recordRound(round: RoundRecord): void {
+    if (!Number.isInteger(round.quoteDecimals) || round.quoteDecimals < 0 || round.quoteDecimals > 36) {
+      throw new Error(`quote decimals are invalid for market ${round.marketId}`);
+    }
     const timestamp = nowIso();
     this.db.prepare(`
-      INSERT INTO rounds (market_id, symbol, asset, status, trading_start, expiry, venue_id, pool_address, created_at, updated_at)
-      VALUES (@marketId, @symbol, @asset, @status, @tradingStart, @expiry, @venueId, @poolAddress, @createdAt, @updatedAt)
+      INSERT INTO rounds (market_id, symbol, asset, status, trading_start, expiry, venue_id, pool_address, quote_decimals, created_at, updated_at)
+      VALUES (@marketId, @symbol, @asset, @status, @tradingStart, @expiry, @venueId, @poolAddress, @quoteDecimals, @createdAt, @updatedAt)
       ON CONFLICT(market_id) DO UPDATE SET
         symbol = excluded.symbol,
         asset = excluded.asset,
@@ -175,6 +188,7 @@ export class EventStore {
         expiry = excluded.expiry,
         venue_id = excluded.venue_id,
         pool_address = excluded.pool_address,
+        quote_decimals = excluded.quote_decimals,
         updated_at = excluded.updated_at
     `).run({ ...round, createdAt: timestamp, updatedAt: timestamp });
   }
@@ -225,7 +239,7 @@ export class EventStore {
 
   snapshot(): EventSnapshot {
     const rounds = this.db.prepare(`
-      SELECT market_id, symbol, asset, status, trading_start, expiry, venue_id, pool_address
+      SELECT market_id, symbol, asset, status, trading_start, expiry, venue_id, pool_address, quote_decimals
       FROM rounds
       ORDER BY created_at ASC
     `).all() as {
@@ -237,6 +251,7 @@ export class EventStore {
       expiry: number;
       venue_id: string | null;
       pool_address: string;
+      quote_decimals: number;
     }[];
     const orders = this.db.prepare(`
       SELECT market_id, agent_id, pool_address, side, order_type, status, price, quantity,
@@ -306,6 +321,7 @@ export class EventStore {
         expiry: row.expiry,
         venueId: row.venue_id,
         poolAddress: row.pool_address,
+        quoteDecimals: row.quote_decimals,
       })),
       orders: orders.map((row) => ({
         marketId: row.market_id,

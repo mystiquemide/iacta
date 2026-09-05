@@ -17,6 +17,7 @@ test("event store reopens with tx-linked lifecycle events intact", () => {
     expiry: 1_600,
     venueId: "0xvenue",
     poolAddress: "0xpool",
+    quoteDecimals: 6,
   };
   const fill = {
     marketId: round.marketId,

@@ -9,9 +9,12 @@ export default function Home() {
         <Link className="wordmark" href="/" aria-label="IACTA home">
           IACTA<span>.</span>
         </Link>
-        <a className="nav-link" href={explorerUrl} target="_blank" rel="noreferrer">
-          Shannon explorer <span aria-hidden="true">↗</span>
-        </a>
+        <div className="arena-nav-links">
+          <Link className="nav-link" href="/arena">Enter arena</Link>
+          <a className="nav-link" href={explorerUrl} target="_blank" rel="noreferrer">
+            Shannon explorer <span aria-hidden="true">↗</span>
+          </a>
+        </div>
       </nav>
 
       <section className="hero" aria-labelledby="hero-title">

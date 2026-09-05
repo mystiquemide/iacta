@@ -34,6 +34,7 @@ async function inspectMarket(exchange: SomniaMarkets, store: EventStore, market:
     expiry: Number(market.expiry),
     venueId: market.venueId ?? null,
     poolAddress: market.poolAddress,
+    quoteDecimals: market.quoteDecimals,
   });
 
   const result: Record<string, unknown> = {

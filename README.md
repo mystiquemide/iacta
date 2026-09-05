@@ -13,6 +13,8 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+Open [http://localhost:3000/arena](http://localhost:3000/arena) for the ledger-backed spectator board.
+
 To inspect the live Shannon markets and order books without a signer:
 
 ```bash
