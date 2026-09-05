@@ -78,12 +78,14 @@ export function Nav({ engineStatus }: NavProps) {
             />
             {live ? "Live on Shannon" : "Engine offline"}
           </span>
-          <Link
-            href="/arena"
-            className="rounded-xs bg-primary px-4 py-1.5 text-[0.8125rem] font-medium text-primary-ink transition-colors hover:bg-white"
-          >
-            Watch live
-          </Link>
+          {pathname !== "/arena" ? (
+            <Link
+              href="/arena"
+              className="rounded-xs bg-primary px-4 py-1.5 text-[0.8125rem] font-medium text-primary-ink transition-colors hover:bg-white"
+            >
+              Watch live
+            </Link>
+          ) : null}
         </div>
       </div>
       <nav aria-label="Primary mobile" className="border-t border-line md:hidden">

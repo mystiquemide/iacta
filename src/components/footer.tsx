@@ -1,17 +1,10 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 
-const PHOTO_CREDITS = [
-  "Mountains at night: Unsplash",
-  "Chess: Unsplash",
-  "Market chart: Unsplash",
-  "Arena lights: Unsplash",
-];
-
 export function Footer() {
   return (
     <footer className="border-t border-line bg-canvas">
-      <div className="shell grid gap-10 py-14 md:grid-cols-[2fr_1fr_1fr_1fr]">
+      <div className="shell grid gap-10 py-14 md:grid-cols-[2fr_1fr_1fr]">
         <div className="flex flex-col gap-4">
           <Link href="/" aria-label="IACTA home" className="w-fit text-ink">
             <Logo height={18} />
@@ -50,14 +43,6 @@ export function Footer() {
           <span className="text-[0.8125rem] text-ink-2">Venue DreamDEX</span>
           <span className="text-[0.8125rem] text-ink-2">Testnet only</span>
         </nav>
-        <div className="flex flex-col gap-3">
-          <p className="kicker">Imagery</p>
-          {PHOTO_CREDITS.map((credit) => (
-            <span key={credit} className="text-[0.75rem] text-ink-3">
-              {credit}
-            </span>
-          ))}
-        </div>
       </div>
       <div className="border-t border-line">
         <div className="shell flex flex-wrap items-center justify-between gap-3 py-5">
