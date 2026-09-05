@@ -122,6 +122,18 @@ a {
   width: 7px;
 }
 
+.status-dot-live {
+  background: #7ed4a0;
+}
+
+.status-dot-waiting {
+  background: var(--arena-gold);
+}
+
+.status-dot-offline {
+  background: var(--arena-red);
+}
+
 h1 {
   font-size: clamp(3.2rem, 9vw, 8.5rem);
   font-weight: 700;
@@ -139,6 +151,46 @@ h1 {
   max-width: 520px;
 }
 
+.home-actions {
+  align-items: center;
+  display: flex;
+  gap: 20px;
+  margin-top: 34px;
+}
+
+.home-action-primary,
+.home-action-secondary {
+  border: 1px solid var(--arena-line);
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  padding: 11px 14px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.home-action-primary {
+  background: var(--arena-gold);
+  border-color: var(--arena-gold);
+  color: var(--arena-black);
+}
+
+.home-action-secondary {
+  color: var(--arena-muted);
+}
+
+.home-action-primary:hover,
+.home-action-primary:focus-visible {
+  background: var(--arena-bone);
+  border-color: var(--arena-bone);
+}
+
+.home-action-secondary:hover,
+.home-action-secondary:focus-visible {
+  border-color: var(--arena-bone);
+  color: var(--arena-bone);
+}
+
 .hero-rule {
   background: var(--arena-gold);
   height: 2px;
@@ -151,8 +203,8 @@ h1 {
   border: 1px solid var(--arena-line);
   display: grid;
   gap: 1px;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  max-width: 620px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-width: 760px;
 }
 
 .network-panel > div {
@@ -170,6 +222,29 @@ h1 {
 .network-panel strong {
   font-size: 13px;
   font-weight: 500;
+}
+
+.landing-proof {
+  align-items: center;
+  display: flex;
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.landing-proof a,
+.landing-proof > span:last-child {
+  color: var(--arena-muted);
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.landing-proof a:hover,
+.landing-proof a:focus-visible {
+  color: var(--arena-bone);
 }
 
 .arena-shell {
@@ -773,6 +848,19 @@ h1 {
 
   .network-panel > div:last-child {
     border-bottom: 0;
+  }
+
+  .home-actions {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+    width: min(280px, 100%);
+  }
+
+  .landing-proof {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
   }
 
   .arena-heading {

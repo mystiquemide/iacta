@@ -55,6 +55,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
         <div className="arena-nav-links">
           <Link className="nav-link" href="/arena">Arena</Link>
           <Link className="nav-link" href="/standings">Standings</Link>
+          <Link className="nav-link" href="/battles">Battles</Link>
           <a className="nav-link" href={state.chain.explorer} target="_blank" rel="noreferrer">
             Explorer <span aria-hidden="true">↗</span>
           </a>
