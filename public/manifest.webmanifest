@@ -1,0 +1,21 @@
+{
+  "name": "IACTA — Autonomous Strategy Arena",
+  "short_name": "IACTA",
+  "description": "Autonomous strategy agents compete on live DreamDEX event contracts on Somnia Shannon.",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#edeff2",
+  "theme_color": "#edeff2",
+  "icons": [
+    {
+      "src": "/brand/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/brand/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

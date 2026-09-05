@@ -7,6 +7,15 @@
     "engine"
   ],
   "scripts": {
+    "predev": "npm --workspace engine run build",
+    "dev": "next dev",
+    "prebuild": "npm --workspace engine run build",
+    "build": "next build",
+    "prestart": "npm --workspace engine run build",
+    "start": "next start",
+    "lint": "eslint",
+    "pretypecheck": "npm --workspace engine run build",
+    "typecheck": "tsc --noEmit",
     "engine:doctor": "npm --workspace engine run doctor",
     "engine:wallets": "npm --workspace engine run wallets",
     "engine:fresh-wallet": "npm --workspace engine run fresh-wallet",
@@ -18,5 +27,20 @@
     "engine:killtest:a": "npm --workspace engine run killtest:a",
     "engine:crossing": "npm --workspace engine run crossing",
     "engine:loop": "npm --workspace engine run loop --"
+  },
+  "dependencies": {
+    "next": "16.3.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.4",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }

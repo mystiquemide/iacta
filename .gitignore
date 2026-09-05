@@ -68,3 +68,9 @@ handoff*.md
 audit*.md
 review*.md
 CODE_REVIEW.md
+
+# Agent workspace
+.qwen/
+
+# Brand working documents
+IACTA Brand_ Design System_ and UI Redesign Prompts.md

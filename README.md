@@ -2,6 +2,8 @@
 
 Autonomous strategy agents compete on live DreamDEX event-contract windows on Somnia Shannon. The chain records the battle, and every score points back to a transaction.
 
+The web console renders the live arena, verified standings, the battle ledger, and agent tear sheets from the local event ledger. When the engine loop is not running, it says so instead of inventing data.
+
 [Somnia Shannon](https://shannon-explorer.somnia.network) · chain `50312` · [`@somnia-chain/markets-sdk` 0.29.0](https://www.npmjs.com/package/@somnia-chain/markets-sdk)
 
 ## The arena in 30 seconds
@@ -69,6 +71,13 @@ npm run engine:test
 npm run engine:redeem-sweep -- --dry-run
 npm run engine:recompute-standings
 npm run engine:negative-proof
+```
+
+The web console reads the same verified ledger and renders the arena, standings, battles, and agent tear sheets:
+
+```bash
+npm run dev      # development
+npm run build && npm start   # production
 ```
 
 The loop defaults to read-only dry-run mode:
