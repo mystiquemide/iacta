@@ -1,20 +1,30 @@
 @import "tailwindcss";
 
 @theme {
-  --color-pure-black: #000000;
-  --color-obsidian: #1a1a1a;
-  --color-graphite: #333333;
-  --color-iron: #5a5a5a;
-  --color-slate: #666666;
-  --color-steel: #808080;
-  --color-fog: #a0a0a0;
-  --color-ash: #bfbfbf;
-  --color-mist: #dedfe1;
-  --color-cloud: #edeff2;
-  --color-paper: #f7f8fa;
-  --color-white: #ffffff;
-  --color-glacier-tint: #e2e7fc;
-  --color-badge-slate: #6f6f6f;
+  --color-canvas: #181818;
+  --color-surface: #1f1f1f;
+  --color-surface-2: #262626;
+  --color-surface-3: #303030;
+  --color-hover: #404040;
+  --color-line: #2b2b2b;
+  --color-line-2: #333333;
+  --color-ink: #eeeeee;
+  --color-ink-2: #a4a19b;
+  --color-ink-3: #737370;
+  --color-primary: #f8f8f8;
+  --color-primary-ink: #181818;
+  --color-chart-1: #5c9fe9;
+  --color-chart-2: #507aab;
+  --color-chart-3: #3d5f80;
+  --color-chart-4: #35495f;
+  --color-chart-5: #2e3640;
+  --color-up: #58685c;
+  --color-up-ink: #9fb3a4;
+  --color-down: #775a63;
+  --color-down-ink: #c9a3ad;
+  --color-live: #51657c;
+  --color-live-ink: #a8c3e8;
+  --color-focus: #e4e4e4;
 
   --font-inter:
     var(--inter),
@@ -26,118 +36,157 @@
     Roboto,
     sans-serif;
 
-  --font-fraktion:
-    var(--fraktion),
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  --font-mono:
+    var(--fira),
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace;
 
-  --text-caption: 12px;
-  --leading-caption: 1.4;
+  --radius-xs: 4px;
+  --radius-window: 12px;
 
-  --text-body-sm: 14px;
-  --leading-body-sm: 1.5;
-
-  --text-body: 16px;
-  --leading-body: 1.5;
-
-  --text-subheading: 20px;
-  --leading-subheading: 1.4;
-
-  --text-heading-sm: 24px;
-  --leading-heading-sm: 1.3;
-
-  --text-heading: 32px;
-  --leading-heading: 1.2;
-
-  --text-display: 56px;
-  --leading-display: 1.2;
-
-  --spacing-8: 8px;
-  --spacing-16: 16px;
-  --spacing-24: 24px;
-  --spacing-32: 32px;
-  --spacing-40: 40px;
-  --spacing-48: 48px;
-  --spacing-56: 56px;
-  --spacing-72: 72px;
-  --spacing-80: 80px;
-
-  --radius-sm: 2px;
-
-  --shadow-sm:
-    rgba(0, 0, 0, 0.04) 0px 2px 4px 0px;
-
-  --shadow-sm-2:
-    rgba(0, 0, 0, 0.04) 0px 2px 4px 0px,
-    rgba(0, 0, 0, 0.08) 0px 8px 32px 0px;
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
 }
 
 :root {
-  --page-max-width: 1200px;
-  --section-gap: 80px;
-  --card-padding: 16px;
-  --element-gap: 16px;
-
-  --radius-nav: 2px;
-  --radius-tags: 2px;
-  --radius-cards: 2px;
-  --radius-inputs: 2px;
-  --radius-buttons: 2px;
-
-  --surface-canvas: #edeff2;
-  --surface-surface: #f7f8fa;
-  --surface-card: #ffffff;
-  --surface-dark-band: #1a1a1a;
-  --surface-accent-wash: #e2e7fc;
+  --page-max: 1200px;
 }
 
 @layer base {
   html {
-    background-color: var(--surface-canvas);
+    background-color: var(--color-canvas);
+    scroll-behavior: smooth;
   }
 
   body {
-    background-color: var(--surface-canvas);
-    color: var(--color-pure-black);
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
     font-family: var(--font-inter);
-    font-size: var(--text-body-sm);
-    line-height: var(--leading-body-sm);
+    font-size: 0.875rem;
+    line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
 
   ::selection {
-    background-color: var(--surface-accent-wash);
+    background-color: #33404f;
+    color: #eeeeee;
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-pure-black);
-    outline-offset: 1px;
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
   }
 }
 
 @utility shell {
-  max-width: var(--page-max-width);
+  max-width: var(--page-max);
   margin-inline: auto;
-  padding-inline: var(--spacing-16);
+  padding-inline: 1.5rem;
 }
 
 @utility mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-}
-
-@utility label {
-  font-size: var(--text-caption);
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--color-badge-slate);
-}
-
-@utility num {
+  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+}
+
+@utility kicker {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+}
+
+/* Scroll reveal: altitude's enter motion. Content is visible by default
+   when JS is off; JS adds [data-reveal] progressively. */
+.reveal {
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.6s var(--ease-expo),
+    transform 0.6s var(--ease-expo);
+}
+
+.reveal[data-visible="true"] {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Stats marquee */
+@keyframes scroll-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: scroll-left 40s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
+/* Hero image reveal */
+@keyframes mountain-reveal {
+  from {
+    opacity: 0;
+    transform: scale(1.06);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.hero-reveal {
+  animation: mountain-reveal 1.2s var(--ease-expo) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-reveal {
+    animation: none;
+  }
+}
+
+/* Live dot */
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.live-dot {
+  animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot {
+    animation: none;
+  }
 }

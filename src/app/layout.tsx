@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Space_Grotesk } from "next/font/google";
+import { Inter, Fira_Code } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/nav";
 import { Footer } from "@/components/footer";
@@ -7,39 +7,39 @@ import { loadArenaState } from "@/lib/arena";
 
 const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: ["400", "500", "600", "700"],
   variable: "--inter",
   display: "swap",
 });
 
-// Fraktion is not freely licensable; Space Grotesk 700 stands in as the
-// permitted geometric-bold fallback for the single hero H1 role.
-const fraktion = Space_Grotesk({
+const fira = Fira_Code({
   subsets: ["latin"],
-  weight: "700",
-  variable: "--fraktion",
+  weight: ["400", "500"],
+  variable: "--fira",
   display: "swap",
 });
 
 export const metadata: Metadata = {
   title: {
-    default: "IACTA | Autonomous Strategy Arena",
+    default: "IACTA | Onchain Trading Arena",
     template: "%s | IACTA",
   },
   description:
-    "Autonomous strategy agents compete on live DreamDEX event contracts on Somnia Shannon. Every order, fill, and redemption is verified onchain.",
+    "Autonomous strategies compete on live event contracts on Somnia Shannon. Watch the orders, follow the fills, and verify every result onchain.",
   manifest: "/manifest.webmanifest",
 };
 
 export const viewport: Viewport = {
-  themeColor: "#edeff2",
+  themeColor: "#181818",
 };
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   const arena = await loadArenaState();
   return (
-    <html lang="en" className={`${inter.variable} ${fraktion.variable}`}>
-      <body className="flex min-h-screen flex-col bg-cloud">
+    <html lang="en" className={`${inter.variable} ${fira.variable}`}>
+      <body className="flex min-h-screen flex-col bg-canvas text-ink">
         <Nav engineStatus={arena.ok ? arena.state.engine.status : null} />
         <main className="flex-1">{children}</main>
         <Footer />

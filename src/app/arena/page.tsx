@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { loadArenaState } from "@/lib/arena";
-import { EmptyState } from "@/components/ui";
+import { WaitingPanel } from "@/components/ui";
 import { ArenaLive } from "./arena-live";
 
 export const metadata: Metadata = {
@@ -14,18 +14,13 @@ export default async function ArenaPage() {
 
   if (!arena.ok) {
     return (
-      <div className="shell py-80">
-        <EmptyState
-          label="Arena unavailable"
-          message={`${arena.error} Verify the engine ledger and try again.`}
-        />
+      <div className="shell pt-32 pb-20">
+        <WaitingPanel title="Arena unavailable">
+          {arena.error} Verify the engine ledger and try again.
+        </WaitingPanel>
       </div>
     );
   }
 
-  return (
-    <div className="py-40">
-      <ArenaLive initialState={arena.state} />
-    </div>
-  );
+  return <ArenaLive initialState={arena.state} />;
 }

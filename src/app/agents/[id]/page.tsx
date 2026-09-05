@@ -5,15 +5,15 @@ import { loadArenaState } from "@/lib/arena";
 import { profileFor } from "@/lib/agents";
 import {
   formatDate,
+  formatDateTime,
   formatPrice,
   formatQuantity,
   formatTime,
-  formatDateTime,
   shortHash,
   signedUnits,
 } from "@/lib/format";
 import { battlesForAgent } from "@/lib/derive";
-import { DataCard, EmptyState, ExplorerLink, SectionLabel } from "@/components/ui";
+import { Kicker, Panel, WaitingPanel } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
@@ -32,11 +32,10 @@ export default async function AgentPage({ params }: PageProps) {
 
   if (!arena.ok) {
     return (
-      <div className="shell py-80">
-        <EmptyState
-          label="Agent profile unavailable"
-          message={`${arena.error} Verify the engine ledger and try again.`}
-        />
+      <div className="shell pt-32 pb-20">
+        <WaitingPanel title="Agent profile unavailable">
+          {arena.error} Verify the engine ledger and try again.
+        </WaitingPanel>
       </div>
     );
   }
@@ -46,186 +45,180 @@ export default async function AgentPage({ params }: PageProps) {
   if (!agent) notFound();
 
   const profile = profileFor(agent.agentId);
-  const standing =
-    state.standings.find((row) => row.agentId === agent.agentId) ?? null;
+  const standing = state.standings.find((row) => row.agentId === agent.agentId) ?? null;
   const events = state.killfeed.filter((event) => event.agentId === agent.agentId);
   const fills = events.filter((event) => event.kind === "FILL");
   const averageEntry =
     fills.length > 0
       ? (
-          fills.reduce(
-            (total, fill) => total + Number(fill.price ?? "0") / 1_000_000,
-            0,
-          ) / fills.length
+          fills.reduce((total, fill) => total + Number(fill.price ?? "0") / 1_000_000, 0) /
+          fills.length
         ).toFixed(4)
       : null;
   const markets = new Set(events.map((event) => event.marketId.toLowerCase()));
 
   return (
-    <div className="shell py-80">
-      <div className="flex flex-col gap-40">
-        <div>
+    <div className="shell flex flex-col gap-10 pt-28 pb-20 md:pt-32">
+      <div>
+        <Link
+          href="/agents"
+          className="text-[0.75rem] font-medium text-ink-2 transition-colors hover:text-ink"
+        >
+          ← Agents
+        </Link>
+        <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
+          <div className="flex flex-col gap-2">
+            <Kicker>Strategy profile</Kicker>
+            <h1 className="text-3xl font-semibold tracking-tight text-ink md:text-4xl">
+              {agent.agentId}
+            </h1>
+            <p className="text-[0.8125rem] text-ink-2">
+              {profile.architecture} · {profile.posture}
+            </p>
+          </div>
           <Link
-            href="/agents"
-            className="text-caption font-medium text-iron transition-colors hover:text-pure-black"
+            href="/standings"
+            className="text-sm font-medium text-ink-2 underline decoration-line-2 underline-offset-4 transition-colors hover:text-ink"
           >
-            ← Agents
+            Standings →
           </Link>
-          <div className="mt-16 flex flex-wrap items-end justify-between gap-16">
-            <div>
-              <SectionLabel>Strategy profile</SectionLabel>
-              <h1 className="mt-8 text-heading font-bold text-pure-black">
-                {agent.agentId}
-              </h1>
-              <p className="mt-8 text-body-sm text-iron">
-                {profile.architecture} · {profile.posture}
-              </p>
-            </div>
-            <Link
-              href="/standings"
-              className="text-body-sm font-medium text-iron transition-colors hover:text-pure-black"
-            >
-              Standings →
-            </Link>
-          </div>
         </div>
+      </div>
 
-        <div className="grid gap-40 lg:grid-cols-3">
-          <div className="flex flex-col gap-40 lg:col-span-2">
-            <DataCard className="p-16">
-              <SectionLabel>Behavior</SectionLabel>
-              <p className="mt-8 text-body text-graphite">{profile.behavior}</p>
-              <p className="mt-16 border-t border-mist pt-16 text-body-sm text-iron">
-                Every order passes venue guards — on-chain status, price grid, and quantity
-                grid checks — before the agent signs a transaction.
-              </p>
-            </DataCard>
+      <div className="grid gap-10 lg:grid-cols-3">
+        <div className="flex flex-col gap-8 lg:col-span-2">
+          <Panel className="p-5">
+            <Kicker>Behavior</Kicker>
+            <p className="mt-2 text-[0.875rem] leading-relaxed text-ink-2">
+              {profile.behavior}
+            </p>
+            <p className="mt-4 border-t border-line pt-4 text-[0.8125rem] leading-relaxed text-ink-3">
+              Every order passes venue guards: on-chain status, expiry headroom,
+              tick grid, lot grid, and collateral checks, before the agent signs.
+            </p>
+          </Panel>
 
-            <div>
-              <div className="border-b border-mist pb-8">
-                <SectionLabel>Recent activity</SectionLabel>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[560px] text-body-sm">
-                  <tbody>
-                    {events.slice(0, 16).map((event, index) => (
-                      <tr key={index} className="border-b border-mist last:border-b-0">
-                        <td className="num py-8 pr-16 text-steel">
-                          {formatDate(event.occurredAt)}{" "}
-                          {formatTime(event.occurredAt)}
-                        </td>
-                        <td className="py-8 pr-16 text-caption text-badge-slate">
-                          {event.kind}
-                        </td>
-                        <td className="py-8 pr-16 text-graphite">
-                          {event.side ?? event.outcome ?? event.status ?? "—"}
-                          {event.price ? ` @ ${formatPrice(event.price)}` : ""}
-                          {event.quantity ? ` × ${formatQuantity(event.quantity)}` : ""}
-                        </td>
-                        <td className="py-8 text-right">
-                          {event.explorer ? (
-                            <ExplorerLink href={event.explorer}>
-                              {shortHash(event.txHash)}
-                            </ExplorerLink>
-                          ) : (
-                            <span className="text-caption text-steel">—</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                    {events.length === 0 ? (
-                      <tr>
-                        <td className="py-16 text-body-sm text-iron">
-                          No recorded activity yet.
-                        </td>
-                      </tr>
-                    ) : null}
-                  </tbody>
-                </table>
-              </div>
+          <div className="flex flex-col gap-3">
+            <div className="border-b border-line pb-2">
+              <Kicker>Recent activity</Kicker>
             </div>
-          </div>
-
-          <DataCard className="h-fit p-16">
-            <SectionLabel>Metrics</SectionLabel>
-            <dl className="mt-16 flex flex-col gap-16 text-body-sm">
-              <div className="flex justify-between gap-16">
-                <dt className="text-iron">Battles</dt>
-                <dd className="num font-medium text-pure-black">
-                  {battlesForAgent(state, agent.agentId)}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-16">
-                <dt className="text-iron">Markets traded</dt>
-                <dd className="num font-medium text-pure-black">{markets.size}</dd>
-              </div>
-              <div className="flex justify-between gap-16">
-                <dt className="text-iron">Fills</dt>
-                <dd className="num font-medium text-pure-black">{agent.fillCount}</dd>
-              </div>
-              <div className="flex justify-between gap-16">
-                <dt className="text-iron">Redemptions</dt>
-                <dd className="num font-medium text-pure-black">
-                  {agent.redemptionCount}
-                </dd>
-              </div>
-              <div className="flex justify-between gap-16">
-                <dt className="text-iron">Average entry</dt>
-                <dd className="num font-medium text-pure-black">
-                  {averageEntry ?? "—"}
-                </dd>
-              </div>
-              {standing ? (
-                <>
-                  <div className="flex justify-between gap-16 border-t border-mist pt-16">
-                    <dt className="text-iron">Buy costs</dt>
-                    <dd className="num font-medium text-pure-black">
-                      {signedUnits(standing.buyCosts)}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-16">
-                    <dt className="text-iron">Sell proceeds</dt>
-                    <dd className="num font-medium text-pure-black">
-                      {signedUnits(standing.sellProceeds)}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-16">
-                    <dt className="text-iron">Redemption proceeds</dt>
-                    <dd className="num font-medium text-pure-black">
-                      {signedUnits(standing.redeemedProceeds)}
-                    </dd>
-                  </div>
-                  <div className="flex justify-between gap-16 border-t border-mist pt-16">
-                    <dt className="text-iron">Score · net PnL</dt>
-                    <dd className="num font-bold text-pure-black">
-                      {signedUnits(standing.score)}
-                    </dd>
-                  </div>
-                </>
-              ) : null}
-              <div className="flex justify-between gap-16 border-t border-mist pt-16">
-                <dt className="text-iron">Last active</dt>
-                <dd className="font-medium text-pure-black">
-                  {formatDateTime(agent.latestEventAt)}
-                </dd>
-              </div>
-            </dl>
-            {standing && standing.fillTxHashes.length > 0 ? (
-              <div className="mt-16 border-t border-mist pt-16">
-                <SectionLabel>Proof of activity</SectionLabel>
-                <ul className="mt-8 flex flex-col gap-8">
-                  {standing.fillTxHashes.slice(0, 6).map((hash) => (
-                    <li key={hash}>
-                      <ExplorerLink href={`${state.chain.explorer}/tx/${hash}`}>
-                        {shortHash(hash)}
-                      </ExplorerLink>
-                    </li>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[560px] text-left text-[0.8125rem]">
+                <tbody>
+                  {events.slice(0, 16).map((event, index) => (
+                    <tr key={index} className="border-b border-line/50 last:border-b-0">
+                      <td className="mono py-2 pr-4 text-[0.75rem] text-ink-3">
+                        {formatDate(event.occurredAt)} {formatTime(event.occurredAt)}
+                      </td>
+                      <td className="py-2 pr-4 text-[0.75rem] text-ink-3">{event.kind}</td>
+                      <td className="mono py-2 pr-4 text-ink-2">
+                        {event.side ?? event.outcome ?? event.status ?? "-"}
+                        {event.price ? ` @ ${formatPrice(event.price)}` : ""}
+                        {event.quantity ? ` × ${formatQuantity(event.quantity)}` : ""}
+                      </td>
+                      <td className="py-2 text-right">
+                        {event.explorer ? (
+                          <a
+                            href={event.explorer}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mono text-[0.75rem] text-ink-2 underline decoration-line-2 underline-offset-2 transition-colors hover:text-ink"
+                          >
+                            {shortHash(event.txHash)} ↗
+                          </a>
+                        ) : (
+                          <span className="mono text-[0.75rem] text-ink-3">-</span>
+                        )}
+                      </td>
+                    </tr>
                   ))}
-                </ul>
-              </div>
-            ) : null}
-          </DataCard>
+                  {events.length === 0 ? (
+                    <tr>
+                      <td className="py-4 text-ink-2">No recorded activity yet.</td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
+
+        <Panel className="h-fit p-5">
+          <Kicker>Metrics</Kicker>
+          <dl className="mt-4 flex flex-col gap-3 text-[0.8125rem]">
+            <div className="flex justify-between gap-4">
+              <dt className="text-ink-2">Battles</dt>
+              <dd className="mono font-medium text-ink">
+                {battlesForAgent(state, agent.agentId)}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-ink-2">Markets traded</dt>
+              <dd className="mono font-medium text-ink">{markets.size}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-ink-2">Fills</dt>
+              <dd className="mono font-medium text-ink">{agent.fillCount}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-ink-2">Redemptions</dt>
+              <dd className="mono font-medium text-ink">{agent.redemptionCount}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-ink-2">Average entry</dt>
+              <dd className="mono font-medium text-ink">{averageEntry ?? "-"}</dd>
+            </div>
+            {standing ? (
+              <>
+                <div className="flex justify-between gap-4 border-t border-line pt-3">
+                  <dt className="text-ink-2">Buy costs</dt>
+                  <dd className="mono font-medium text-ink">{signedUnits(standing.buyCosts)}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-ink-2">Sell proceeds</dt>
+                  <dd className="mono font-medium text-ink">
+                    {signedUnits(standing.sellProceeds)}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-ink-2">Redemption proceeds</dt>
+                  <dd className="mono font-medium text-ink">
+                    {signedUnits(standing.redeemedProceeds)}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-4 border-t border-line pt-3">
+                  <dt className="text-ink-2">Score · net PnL</dt>
+                  <dd className="mono font-semibold text-ink">{signedUnits(standing.score)}</dd>
+                </div>
+              </>
+            ) : null}
+            <div className="flex justify-between gap-4 border-t border-line pt-3">
+              <dt className="text-ink-2">Last active</dt>
+              <dd className="mono text-[0.75rem] font-medium text-ink">
+                {formatDateTime(agent.latestEventAt)}
+              </dd>
+            </div>
+          </dl>
+          {standing && standing.fillTxHashes.length > 0 ? (
+            <div className="mt-4 border-t border-line pt-4">
+              <Kicker>Proof of activity</Kicker>
+              <ul className="mt-2 flex flex-col gap-1.5">
+                {standing.fillTxHashes.slice(0, 6).map((hash) => (
+                  <li key={hash}>
+                    <a
+                      href={`${state.chain.explorer}/tx/${hash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mono text-[0.75rem] text-ink-2 underline decoration-line-2 underline-offset-2 transition-colors hover:text-ink"
+                    >
+                      {shortHash(hash)} ↗
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+        </Panel>
       </div>
     </div>
   );

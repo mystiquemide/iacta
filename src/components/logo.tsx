@@ -1,29 +1,9 @@
-interface SymbolProps {
-  className?: string;
-}
-
-export function Symbol({ className }: SymbolProps) {
-  return (
-    <svg
-      viewBox="0 0 64 64"
-      className={className}
-      fill="currentColor"
-      aria-hidden="true"
-      focusable="false"
-    >
-      <rect x="28.5" y="9" width="7" height="46" />
-      <polygon points="20.99,32.00 15.76,19.00 20.68,15.56 25.90,28.56 20.68,48.44 15.76,45.00" />
-      <polygon points="43.01,32.00 48.24,19.00 43.32,15.56 38.10,28.56 43.32,48.44 48.24,45.00" />
-    </svg>
-  );
-}
-
 interface LogoProps {
   className?: string;
   height?: number;
 }
 
-export function Logo({ className, height = 24 }: LogoProps) {
+export function Logo({ className, height = 22 }: LogoProps) {
   return (
     <svg
       viewBox="0 32 4503 808"
@@ -46,6 +26,22 @@ export function Logo({ className, height = 24 }: LogoProps) {
         <path d="M987.51 196.15V72.46H1581.61V196.15H1359.38V800H1210.18V196.15Z" />
         <path d="M1329.75 800 1578.62 72.46H1773.58L2028.76 800H1863.08L1746.49 449.04Q1725.21 381.05 1703.64 300.15 1682.07 219.24 1658.12 123.83H1690.46Q1667.26 219.69 1647.05 301.04 1626.84 382.4 1606.76 449.04L1494.3 800ZM1485.24 631.15V514.24H1873.28V631.15Z" />
       </g>
+    </svg>
+  );
+}
+
+export function Mark({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 64 64"
+      className={className}
+      fill="currentColor"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect x="28.5" y="9" width="7" height="46" />
+      <polygon points="20.99,32.00 15.76,19.00 20.68,15.56 25.90,28.56 20.68,48.44 15.76,45.00" />
+      <polygon points="43.01,32.00 48.24,19.00 43.32,15.56 38.10,28.56 43.32,48.44 48.24,45.00" />
     </svg>
   );
 }

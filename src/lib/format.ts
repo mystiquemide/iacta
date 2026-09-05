@@ -46,23 +46,28 @@ export function formatTime(iso: string | null | undefined): string {
 
 /** YYYY-MM-DD from an ISO timestamp. */
 export function formatDate(iso: string | null | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "-";
   const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "—";
+  if (Number.isNaN(date.getTime())) return "-";
   return date.toISOString().slice(0, 10);
+}
+
+export function formatDateTime(iso: string | null | undefined): string {
+  if (!iso) return "-";
+  return `${formatDate(iso)} ${formatTime(iso)} UTC`;
 }
 
 export function formatWindow(tradingStart: number, expiry: number): string {
   const start = new Date(tradingStart * 1000);
   const end = new Date(expiry * 1000);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return "—";
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return "-";
   return `${formatDate(start.toISOString())} ${start.toISOString().slice(11, 19)} – ${end
     .toISOString()
     .slice(11, 19)} UTC`;
 }
 
 export function formatCountdown(seconds: number | null): string {
-  if (seconds === null || seconds < 0) return "—";
+  if (seconds === null || seconds < 0) return "--:--";
   const s = Math.floor(seconds % 60);
   const m = Math.floor((seconds / 60) % 60);
   const h = Math.floor(seconds / 3600);
@@ -72,7 +77,7 @@ export function formatCountdown(seconds: number | null): string {
 }
 
 export function shortHash(hash: string | null | undefined): string {
-  if (!hash) return "—";
+  if (!hash) return "-";
   if (hash.length <= 12) return hash;
   return `${hash.slice(0, 6)}…${hash.slice(-4)}`;
 }
@@ -80,13 +85,6 @@ export function shortHash(hash: string | null | undefined): string {
 export function shortMarketId(marketId: string): string {
   if (marketId.length <= 10) return marketId;
   return `0x…${marketId.slice(-6)}`;
-}
-
-export function formatDateTime(iso: string | null | undefined): string {
-  if (!iso) return "—";
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "—";
-  return `${formatDate(iso)} ${date.toISOString().slice(11, 19)} UTC`;
 }
 
 export { QUOTE_DECIMALS, QUOTE_ONE };

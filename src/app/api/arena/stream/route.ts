@@ -55,7 +55,7 @@ export function GET(request: Request): Response {
 
       const interval = setInterval(send, POLL_INTERVAL_MS);
       request.signal.addEventListener("abort", close, { once: true });
-      send();
+      void send();
     },
     cancel() {
       closeStream();

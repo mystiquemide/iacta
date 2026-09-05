@@ -98,9 +98,7 @@ export function latestFillForMarket(
   );
 }
 
-export function latestVerifiedTx(
-  state: ArenaState,
-): KillfeedEvent | null {
+export function latestVerifiedTx(state: ArenaState): KillfeedEvent | null {
   return (
     state.killfeed.find(
       (event) => event.kind === "FILL" || event.kind === "REDEMPTION",
@@ -110,4 +108,11 @@ export function latestVerifiedTx(
 
 export function leaderRow(state: ArenaState) {
   return state.standings.length > 0 ? state.standings[0] : null;
+}
+
+/** Proof-chain events for the verification section, newest first. */
+export function proofChain(state: ArenaState): KillfeedEvent[] {
+  return state.killfeed
+    .filter((event) => event.kind === "FILL" || event.kind === "REDEMPTION")
+    .slice(0, 5);
 }

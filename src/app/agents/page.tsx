@@ -4,7 +4,7 @@ import { loadArenaState } from "@/lib/arena";
 import { profileFor } from "@/lib/agents";
 import { formatDateTime, signedUnits } from "@/lib/format";
 import { battlesForAgent } from "@/lib/derive";
-import { DataCard, EmptyState, SectionLabel } from "@/components/ui";
+import { Kicker, Panel, WaitingPanel } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Agents",
@@ -17,11 +17,10 @@ export default async function AgentsPage() {
 
   if (!arena.ok) {
     return (
-      <div className="shell py-80">
-        <EmptyState
-          label="Agent roster unavailable"
-          message={`${arena.error} Verify the engine ledger and try again.`}
-        />
+      <div className="shell pt-32 pb-20">
+        <WaitingPanel title="Agent roster unavailable">
+          {arena.error} Verify the engine ledger and try again.
+        </WaitingPanel>
       </div>
     );
   }
@@ -36,71 +35,72 @@ export default async function AgentsPage() {
   }));
 
   return (
-    <div className="shell py-80">
-      <div className="flex flex-col gap-40">
-        <div>
-          <SectionLabel>Strategy roster</SectionLabel>
-          <h1 className="mt-8 text-heading font-bold text-pure-black">Agents</h1>
-          <p className="mt-8 max-w-2xl text-body-sm text-iron">
-            Autonomous strategies competing in the arena. Metrics come from the verified
-            event ledger only.
-          </p>
-        </div>
-
-        {roster.length > 0 ? (
-          <div className="grid gap-16 md:grid-cols-2">
-            {roster.map(({ agent, profile, standing, battles }) => (
-              <DataCard key={agent.agentId} className="p-16">
-                <div className="flex items-start justify-between gap-16">
-                  <div>
-                    <Link
-                      href={`/agents/${agent.agentId}`}
-                      className="text-body font-bold text-pure-black underline decoration-ash underline-offset-2 transition-colors hover:decoration-pure-black"
-                    >
-                      {agent.agentId}
-                    </Link>
-                    <p className="mt-4 text-caption text-iron">{profile.architecture}</p>
-                  </div>
-                  <span className="label">{profile.posture}</span>
-                </div>
-                <p className="mt-16 text-body-sm text-iron">{profile.behavior}</p>
-                <div className="mt-16 grid grid-cols-4 gap-8 border-t border-mist pt-16">
-                  <div>
-                    <span className="label">Battles</span>
-                    <p className="num text-body-sm font-medium text-pure-black">{battles}</p>
-                  </div>
-                  <div>
-                    <span className="label">Fills</span>
-                    <p className="num text-body-sm font-medium text-pure-black">
-                      {agent.fillCount}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="label">Redeemed</span>
-                    <p className="num text-body-sm font-medium text-pure-black">
-                      {agent.redemptionCount}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="label">Score</span>
-                    <p className="num text-body-sm font-bold text-pure-black">
-                      {standing ? signedUnits(standing.score) : "0.00"}
-                    </p>
-                  </div>
-                </div>
-                <p className="mt-8 text-caption text-steel">
-                  Last active {formatDateTime(agent.latestEventAt)}
-                </p>
-              </DataCard>
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            label="No agents"
-            message="The roster appears when the engine ledger records agent activity."
-          />
-        )}
+    <div className="shell flex flex-col gap-10 pt-28 pb-20 md:pt-32">
+      <div className="flex flex-col gap-4">
+        <Kicker>Strategy roster</Kicker>
+        <h1 className="text-3xl font-semibold tracking-tight text-ink md:text-4xl">
+          Agents
+        </h1>
+        <p className="max-w-2xl text-[0.875rem] leading-relaxed text-ink-2">
+          Autonomous strategies competing in the arena. Metrics come from the
+          verified event ledger only.
+        </p>
       </div>
+
+      {roster.length > 0 ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          {roster.map(({ agent, profile, standing, battles }) => (
+            <Panel key={agent.agentId} className="p-5">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <Link
+                    href={`/agents/${agent.agentId}`}
+                    className="text-[0.9375rem] font-semibold text-ink underline decoration-line-2 underline-offset-2 transition-colors hover:decoration-ink"
+                  >
+                    {agent.agentId}
+                  </Link>
+                  <p className="mt-0.5 text-[0.75rem] text-ink-3">{profile.architecture}</p>
+                </div>
+                <span className="kicker">{profile.posture}</span>
+              </div>
+              <p className="mt-4 text-[0.8125rem] leading-relaxed text-ink-2">
+                {profile.behavior}
+              </p>
+              <div className="mt-4 grid grid-cols-4 gap-2 border-t border-line pt-4">
+                <div>
+                  <p className="kicker">Battles</p>
+                  <p className="mono mt-1 text-[0.8125rem] font-medium text-ink">{battles}</p>
+                </div>
+                <div>
+                  <p className="kicker">Fills</p>
+                  <p className="mono mt-1 text-[0.8125rem] font-medium text-ink">
+                    {agent.fillCount}
+                  </p>
+                </div>
+                <div>
+                  <p className="kicker">Redeemed</p>
+                  <p className="mono mt-1 text-[0.8125rem] font-medium text-ink">
+                    {agent.redemptionCount}
+                  </p>
+                </div>
+                <div>
+                  <p className="kicker">Score</p>
+                  <p className="mono mt-1 text-[0.8125rem] font-medium text-ink">
+                    {standing ? signedUnits(standing.score) : "0.000000"}
+                  </p>
+                </div>
+              </div>
+              <p className="mt-3 text-[0.75rem] text-ink-3">
+                Last active {formatDateTime(agent.latestEventAt)}
+              </p>
+            </Panel>
+          ))}
+        </div>
+      ) : (
+        <WaitingPanel title="No agents">
+          The roster appears when the engine ledger records agent activity.
+        </WaitingPanel>
+      )}
     </div>
   );
 }
