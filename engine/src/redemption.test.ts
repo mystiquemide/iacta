@@ -6,6 +6,7 @@ import {
   decodeRedemptionReceipt,
   executeRedemptionPlan,
   planRedemption,
+  selectMatchingRedemption,
   summarizeRedemptionReceipt,
   sweepAgent,
 } from "./redemption.js";
@@ -150,6 +151,26 @@ test("redemption receipt verifier rejects missing or mismatched events", () => {
   );
 });
 
+test("receipt recovery selects only a successful candidate matching the redemption plan", () => {
+  const plan = planRedemption("SECUTOR", account, [position(marketA, 0, 1_000n, 900n)]);
+  assert.ok(plan);
+
+  const selected = selectMatchingRedemption(plan, [
+    {
+      hash: "0xwrong",
+      receipt: { status: "success" },
+      events: [{ marketId: marketA, outcomeIdx: 0, amountBurned: 999n, collateralOut: 890n }],
+    },
+    {
+      hash: "0xright",
+      receipt: { status: "success" },
+      events: [{ marketId: marketA, outcomeIdx: 0, amountBurned: 1_000n, collateralOut: 890n }],
+    },
+  ]);
+
+  assert.deepEqual(selected, { hash: "0xright", receipt: { status: "success" } });
+});
+
 test("redemption execution dry-run never calls the writer", async () => {
   const plan = planRedemption("SECUTOR", account, [position(marketA, 0, 1_000n, 900n)]);
   assert.ok(plan);
@@ -205,6 +226,42 @@ test("redemption execution records verified collateral out from the receipt", as
     outcome: "YES",
     txHash: "0xredeem",
   }]);
+});
+
+test("redemption execution recovers a matching receipt after an ambiguous writer error", async () => {
+  const plan = planRedemption("SECUTOR", account, [position(marketA, 0, 1_000n, 900n)]);
+  assert.ok(plan);
+  let recoveryError = "";
+  let recorded = false;
+
+  const result = await executeRedemptionPlan(plan, {
+    dryRun: false,
+    redeemMany: async () => {
+      throw new Error("realtime response lost after broadcast");
+    },
+    recoverRedemption: async (error) => {
+      recoveryError = error instanceof Error ? error.message : String(error);
+      return { hash: "0xrecovered", receipt: { status: "success" } };
+    },
+    verifyReceipt: () => [{
+      marketId: marketA,
+      outcomeIdx: 0 as const,
+      amountBurned: 1_000n,
+      collateralOut: 890n,
+    }],
+    recordRedemption: () => {
+      recorded = true;
+    },
+  });
+
+  assert.equal(recoveryError, "realtime response lost after broadcast");
+  assert.equal(recorded, true);
+  assert.deepEqual(result, {
+    status: "REDEEMED",
+    estimatedProceeds: 900n,
+    proceeds: 890n,
+    txHash: "0xrecovered",
+  });
 });
 
 test("redemption sweep reads claimable positions before deciding whether to write", async () => {

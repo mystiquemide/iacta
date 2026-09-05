@@ -78,10 +78,15 @@ export interface RedemptionTxResult {
   receipt: unknown;
 }
 
+export interface RedemptionReceiptCandidate extends RedemptionTxResult {
+  events: readonly RedemptionReceiptEvent[];
+}
+
 export interface RedemptionExecutionDependencies {
   dryRun: boolean;
   readTimeoutMs?: number;
   redeemMany: (entries: readonly RedemptionEntry[]) => Promise<RedemptionTxResult>;
+  recoverRedemption?: (error: unknown, plan: RedemptionPlan) => Promise<RedemptionTxResult | null>;
   verifyReceipt: (receipt: unknown) => readonly RedemptionReceiptEvent[];
   recordRedemption: (redemption: RedemptionRecord, raw?: unknown) => void;
 }
@@ -199,6 +204,23 @@ export function summarizeRedemptionReceipt(
   };
 }
 
+export function selectMatchingRedemption(
+  plan: RedemptionPlan,
+  candidates: readonly RedemptionReceiptCandidate[],
+): RedemptionTxResult | null {
+  for (const candidate of candidates) {
+    const receipt = candidate.receipt as { status?: string } | null;
+    if (!candidate.hash.trim() || receipt?.status !== "success") continue;
+    try {
+      summarizeRedemptionReceipt(plan, candidate.events);
+      return { hash: candidate.hash, receipt: candidate.receipt };
+    } catch {
+      // A recent redemption for another plan is not evidence for this plan.
+    }
+  }
+  return null;
+}
+
 export async function executeRedemptionPlan(
   plan: RedemptionPlan | null,
   dependencies: RedemptionExecutionDependencies,
@@ -208,7 +230,16 @@ export async function executeRedemptionPlan(
     return { status: "DRY_RUN", estimatedProceeds: plan.estimatedProceeds };
   }
 
-  const transaction = await dependencies.redeemMany(plan.entries);
+  let transaction: RedemptionTxResult;
+  try {
+    transaction = await dependencies.redeemMany(plan.entries);
+  } catch (error) {
+    const recovered = dependencies.recoverRedemption
+      ? await dependencies.recoverRedemption(error, plan)
+      : null;
+    if (!recovered) throw error;
+    transaction = recovered;
+  }
   if (!transaction.hash.trim()) throw new Error("redemption transaction hash is missing");
   const receipt = transaction.receipt as { status?: string } | null;
   if (receipt?.status !== "success") {
