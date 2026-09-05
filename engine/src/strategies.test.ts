@@ -94,6 +94,15 @@ test("Secutor emits a momentum IOC toward a rising YES book", () => {
   assert.equal(result.intents[0]?.orderType, "IOC");
 });
 
+test("Secutor bootstraps against a resting YES bid before momentum history exists", () => {
+  const result = decide("SECUTOR", snapshot({ recentYesPrices: [] }));
+
+  assert.equal(result.action, "ORDER");
+  assert.equal(result.reason, "bootstrapping against the best YES bid");
+  assert.equal(result.intents[0]?.side, "BUY_NO");
+  assert.equal(result.intents[0]?.price, 490_000n);
+});
+
 test("Thraex emits a mean-reversion IOC after a high YES move", () => {
   const result = decide("THRAEX", snapshot({ recentYesPrices: [450_000n, 500_000n, 700_000n] }));
 

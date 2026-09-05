@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { defaultHeartbeatPath } from "./heartbeat.js";
 import { BATTLE_AGENT_IDS } from "./strategies.js";
 import { computeStandings, type StandingRow } from "./standings.js";
 import { EventStore, type EventSnapshot, type RoundRecord } from "./store.js";
@@ -65,11 +65,6 @@ export interface ArenaState {
 
 const EXPLORER_URL = "https://shannon-explorer.somnia.network";
 const HEARTBEAT_MAX_AGE_MS = 30_000;
-
-function defaultHeartbeatPath(): string {
-  const dataRoot = process.cwd().endsWith("/engine") ? process.cwd() : resolve(process.cwd(), "engine");
-  return resolve(dataRoot, "data", "engine-heartbeat.json");
-}
 
 function explorer(txHash: string | null): string | null {
   return txHash ? `${EXPLORER_URL}/tx/${txHash}` : null;
@@ -240,7 +235,8 @@ export function buildArenaState(
 function readHeartbeatAt(path: string): string | null {
   if (!existsSync(path)) return null;
   try {
-    const parsed = JSON.parse(readFileSync(path, "utf8")) as { heartbeatAt?: unknown };
+    const parsed = JSON.parse(readFileSync(path, "utf8")) as { heartbeatAt?: unknown; mode?: unknown };
+    if (parsed.mode !== undefined && parsed.mode !== "LIVE") return null;
     return typeof parsed.heartbeatAt === "string" ? parsed.heartbeatAt : null;
   } catch {
     return null;

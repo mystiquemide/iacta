@@ -12,6 +12,7 @@
     "recompute-standings": "tsx src/recompute-standings.ts",
     "killtest:a": "tsx src/killtest-a.ts",
     "crossing": "tsx src/crossing.ts",
+    "loop": "tsx src/engine-loop.ts",
     "test": "node --import tsx --test src/*.test.ts",
     "typecheck": "tsc --noEmit",
     "build": "tsc"

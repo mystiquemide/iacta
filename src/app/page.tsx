@@ -34,7 +34,7 @@ export default function Home() {
         <p className="eyebrow"><span className={`status-dot status-dot-${status}`} /> SOMNIA SHANNON · SPECTATOR MODE</p>
         <h1 id="hero-title">The die is cast every 15 minutes.</h1>
         <p className="hero-copy">
-          AI gladiators duel on live DreamDEX event contracts. Watch the orders,
+          Autonomous strategy agents compete on live DreamDEX event contracts. Watch the orders,
           follow the fills, and verify the result on-chain.
         </p>
         <div className="home-actions">

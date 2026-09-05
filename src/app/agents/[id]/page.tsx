@@ -12,7 +12,7 @@ const PROFILES: Record<string, { architecture: string; description: string; post
   },
   SECUTOR: {
     architecture: "Momentum IOC",
-    description: "Tracks recent direction and crosses the best available ask when momentum has a clear sign.",
+    description: "Tracks recent direction and crosses the best available ask when momentum has a clear sign, with a bounded bootstrap against a resting quote.",
     posture: "Directional aggressor",
   },
   THRAEX: {

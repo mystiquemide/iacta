@@ -91,6 +91,22 @@ test("arena state reader loads a heartbeat and closes its store", () => {
   }
 });
 
+test("arena state ignores a dry-run heartbeat", () => {
+  const directory = mkdtempSync(join(tmpdir(), "iacta-arena-dry-run-"));
+  const databasePath = join(directory, "arena.db");
+  const heartbeatPath = join(directory, "heartbeat.json");
+  const heartbeatAt = new Date(now.getTime() - 5_000).toISOString();
+  writeFileSync(heartbeatPath, JSON.stringify({ heartbeatAt, mode: "DRY_RUN" }), { mode: 0o600 });
+
+  try {
+    const state = readArenaState(databasePath, heartbeatPath, now);
+    assert.equal(state.engine.status, "OFFLINE");
+    assert.match(state.engine.reason, /heartbeat/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
 test("arena state exposes recorded rounds newest first with honest live flags", () => {
   const snapshot = baseSnapshot();
   snapshot.rounds.push({

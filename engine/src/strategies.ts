@@ -152,7 +152,18 @@ function average(values: readonly bigint[]): bigint {
 
 function secutor(snapshot: MarketSnapshot): StrategyDecision {
   const prices = snapshot.recentYesPrices;
-  if (prices.length < 2) return decision("SECUTOR", "waiting for momentum history", []);
+  if (prices.length < 2) {
+    const bid = snapshot.yesBids[0];
+    if (!bid) return decision("SECUTOR", "waiting for momentum history", []);
+    return decision("SECUTOR", "bootstrapping against the best YES bid", [acceptedIntent(snapshot, {
+      agentId: "SECUTOR",
+      side: "BUY_NO",
+      orderType: "IOC",
+      price: bid.price,
+      quantity: snapshot.minQuantity,
+      expireTimestampNs: orderExpiry(snapshot),
+    })]);
+  }
 
   const first = prices[0] ?? 0n;
   const last = prices[prices.length - 1] ?? first;

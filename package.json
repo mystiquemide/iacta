@@ -2,7 +2,7 @@
   "name": "iacta",
   "version": "0.1.0",
   "private": true,
-  "description": "A spectator-first AI trading arena for Somnia DreamDEX event contracts.",
+  "description": "A spectator-first arena for autonomous strategy agents on Somnia DreamDEX event contracts.",
   "workspaces": [
     "engine"
   ],
@@ -24,7 +24,8 @@
     "engine:recompute-standings": "npm --workspace engine run recompute-standings",
     "engine:test": "npm --workspace engine test",
     "engine:killtest:a": "npm --workspace engine run killtest:a",
-    "engine:crossing": "npm --workspace engine run crossing"
+    "engine:crossing": "npm --workspace engine run crossing",
+    "engine:loop": "npm --workspace engine run loop --"
   },
   "dependencies": {
     "next": "16.3.4",
