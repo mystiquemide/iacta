@@ -35,7 +35,7 @@ function statusLabel(status: ArenaState["engine"]["status"]): string {
 }
 
 function statusClass(status: ArenaState["engine"]["status"]): string {
-  return `status-pill status-${status.toLowerCase()}`;
+  return `engine-pill engine-pill--${status.toLowerCase()}`;
 }
 
 function roundLabel(round: ArenaState["round"]): string {
@@ -72,70 +72,70 @@ export default function ArenaLive({ initialState }: { initialState: ArenaState }
   });
 
   return (
-    <main className="arena-shell">
-      <nav className="site-nav arena-nav" aria-label="Primary navigation">
-        <Link className="wordmark" href="/" aria-label="IACTA home">
-          IACTA<span>.</span>
+    <main className="ia-shell">
+      <nav className="ia-nav" aria-label="Primary navigation">
+        <Link className="ia-mark" href="/" aria-label="IACTA home">
+          IACTA<span className="ia-mark-dot">.</span>
         </Link>
-        <div className="arena-nav-links">
-          <Link className="nav-link" href="/">Home</Link>
-          <Link className="nav-link" href="/standings">Standings</Link>
-          <Link className="nav-link" href="/battles">Battles</Link>
-          <a className="nav-link" href={state.chain.explorer} target="_blank" rel="noreferrer">
+        <div className="ia-nav-group">
+          <Link className="ia-nav-link" href="/">Home</Link>
+          <Link className="ia-nav-link" href="/standings">Standings</Link>
+          <Link className="ia-nav-link" href="/battles">Battles</Link>
+          <a className="ia-nav-link" href={state.chain.explorer} target="_blank" rel="noreferrer">
             Explorer <span aria-hidden="true">↗</span>
           </a>
         </div>
       </nav>
 
-      <header className="arena-heading">
+      <header className="board-head">
         <div>
-          <p className="eyebrow"><span className="status-dot" /> IACTA / SPECTATOR ARENA</p>
-          <h1>THE BOUT BOARD</h1>
+          <p className="poster-eyebrow"><span className="ia-dot" /> IACTA / SPECTATOR ARENA</p>
+          <h1 className="board-title">THE BOUT BOARD</h1>
         </div>
-        <div className="engine-status" aria-live="polite">
+        <div className="engine-box" aria-live="polite">
           <span className={statusClass(state.engine.status)}>{statusLabel(state.engine.status)}</span>
-          <p>{state.engine.reason}</p>
+          <p className="engine-note">{state.engine.reason}</p>
         </div>
       </header>
 
-      <section className="round-banner" aria-label="Round status">
-        <div>
-          <span className="panel-label">Round</span>
-          <strong>{roundLabel(state.round)}</strong>
+      <section className="round-strip" aria-label="Round status">
+        <div className="round-cell">
+          <span className="ia-label">Round</span>
+          <strong className="round-value">{roundLabel(state.round)}</strong>
         </div>
-        <div>
-          <span className="panel-label">Market</span>
-          <strong>{state.round?.asset ?? "--"}</strong>
+        <div className="round-cell">
+          <span className="ia-label">Market</span>
+          <strong className="round-value">{state.round?.asset ?? "--"}</strong>
         </div>
-        <div>
-          <span className="panel-label">Window</span>
-          <strong>{state.round?.isLive ? `${state.round.countdownSeconds}s` : "history only"}</strong>
+        <div className="round-cell">
+          <span className="ia-label">Window</span>
+          <strong className="round-value">{state.round?.isLive ? `${state.round.countdownSeconds}s` : "history only"}</strong>
         </div>
-        <div>
-          <span className="panel-label">Ledger</span>
-          <strong>{state.counts.fills} fills / {state.counts.redemptions} redemptions</strong>
+        <div className="round-cell">
+          <span className="ia-label">Ledger</span>
+          <strong className="round-value">{state.counts.fills} fills / {state.counts.redemptions} redemptions</strong>
         </div>
       </section>
 
       <section aria-labelledby="gladiators-title">
-        <div className="section-heading">
+        <div className="bill">
           <div>
-            <span className="panel-label">Four architectures</span>
-            <h2 id="gladiators-title">GLADIATORS</h2>
+            <span className="ia-label bill-label">Four architectures</span>
+            <h2 className="bill-title" id="gladiators-title">GLADIATORS</h2>
           </div>
-          <span className="section-note">Score: redeemed + sold - bought</span>
+          <span className="bill-note">Score: redeemed + sold - bought</span>
         </div>
-        <div className="agent-grid">
+        <div className="fight-grid">
           {agents.map((agent, index) => (
-            <article className="agent-card" key={agent.agentId}>
-              <div className="agent-card-top">
-                <span className="agent-index">0{index + 1}</span>
-                <span className="agent-activity">{agent.fillCount} fills</span>
+            <article className="fight-card" key={agent.agentId}>
+              <div className="fight-top">
+                <span className="fight-no">0{index + 1}</span>
+                <span className="fight-activity">{agent.fillCount} fills</span>
               </div>
-              <h3><Link href={`/agents/${agent.agentId}`}>{agent.agentId}</Link></h3>
-              <p className="agent-posture">{PROFILES[agent.agentId]?.posture ?? "Unlisted"}</p>
-              <p className="agent-score">{agent.score}<small> raw</small></p>
-              <div className="agent-meta">
+              <h3 className="fight-name"><Link href={`/agents/${agent.agentId}`}>{agent.agentId}</Link></h3>
+              <p className="fight-posture">{PROFILES[agent.agentId]?.posture ?? "Unlisted"}</p>
+              <p className="fight-score">{agent.score}<small> raw</small></p>
+              <div className="fight-meta">
                 <span>redeemed {agent.redeemedProceeds}</span>
                 <span>claims {agent.redemptionCount}</span>
               </div>
@@ -144,32 +144,32 @@ export default function ArenaLive({ initialState }: { initialState: ArenaState }
         </div>
       </section>
 
-      <section className="killfeed-panel" aria-labelledby="killfeed-title">
-        <div className="section-heading">
+      <section className="ledger-panel" aria-labelledby="killfeed-title">
+        <div className="bill">
           <div>
-            <span className="panel-label">Transaction stream</span>
-            <h2 id="killfeed-title">KILLFEED</h2>
+            <span className="ia-label bill-label">Transaction stream</span>
+            <h2 className="bill-title" id="killfeed-title">KILLFEED</h2>
           </div>
-          <span className="section-note">Every row points to the chain</span>
+          <span className="bill-note">Every row points to the chain</span>
         </div>
         {state.killfeed.length === 0 ? (
-          <p className="empty-state">No recorded events yet. The engine is {statusLabel(state.engine.status)}.</p>
+          <p className="empty-note">No recorded events yet. The engine is {statusLabel(state.engine.status)}.</p>
         ) : (
-          <div className="killfeed-list">
+          <div className="ledger-list">
             {state.killfeed.slice(0, 12).map((event, index) => (
-              <div className="killfeed-row" key={`${event.kind}-${event.txHash ?? "local"}-${index}`}>
-                <time>{timeLabel(event.occurredAt)}</time>
-                <span className={`event-kind event-${event.kind.toLowerCase()}`}>{event.kind}</span>
-                <span className="event-copy">{eventTitle(event)}</span>
+              <div className="ledger-row" key={`${event.kind}-${event.txHash ?? "local"}-${index}`}>
+                <time className="ledger-time">{timeLabel(event.occurredAt)}</time>
+                <span className={`ledger-kind kind-${event.kind.toLowerCase()}`}>{event.kind}</span>
+                <span className="ledger-copy">{eventTitle(event)}</span>
                 {event.kind === "FILL" && event.fillPath === "mint" ? (
-                  <span className="mint-badge">MINT-A-PAIR</span>
+                  <span className="mint-tag">MINT-A-PAIR</span>
                 ) : null}
                 {event.explorer ? (
-                  <a className="event-link" href={event.explorer} target="_blank" rel="noreferrer">
+                  <a className="ledger-link" href={event.explorer} target="_blank" rel="noreferrer">
                     {shortHash(event.txHash)} ↗
                   </a>
                 ) : (
-                  <span className="event-link">{shortHash(event.txHash)}</span>
+                  <span className="ledger-link">{shortHash(event.txHash)}</span>
                 )}
               </div>
             ))}
@@ -178,14 +178,14 @@ export default function ArenaLive({ initialState }: { initialState: ArenaState }
       </section>
 
       {state.dataWarnings.length > 0 ? (
-        <aside className="data-warning" role="status">
+        <aside className="warn-note" role="status">
           Data warning: {state.dataWarnings.join(" ")}
         </aside>
       ) : null}
 
       <ExternalParticipants />
 
-      <footer className="site-footer">
+      <footer className="ia-footer">
         <span>IACTA / ARENA ENGINE</span>
         <span>Every claim, a receipt.</span>
       </footer>

@@ -50,32 +50,32 @@ export default function ExternalParticipants() {
   }, []);
 
   return (
-    <section className="external-panel" aria-labelledby="external-title">
-      <div className="section-heading">
+    <section className="ledger-panel" aria-labelledby="external-title">
+      <div className="bill">
         <div>
-          <span className="panel-label">DreamDEX activity scan</span>
-          <h2 id="external-title">EXTERNAL PARTICIPANTS</h2>
+          <span className="ia-label bill-label">DreamDEX activity scan</span>
+          <h2 className="bill-title" id="external-title">EXTERNAL PARTICIPANTS</h2>
         </div>
-        <span className="section-note">
+        <span className="bill-note">
           {response?.participants.length ?? "..."} observed wallets
         </span>
       </div>
-      <p className="external-note">
+      <p className="field-note">
         Wallets below appear in indexed fills outside the IACTA roster. Identity and strategy remain unverified.
       </p>
       {!response ? (
-        <p className="empty-state">Scanning recent DreamDEX fills...</p>
+        <p className="empty-note">Scanning recent DreamDEX fills...</p>
       ) : response.participants.length === 0 ? (
-        <p className="empty-state">{response.reason}</p>
+        <p className="empty-note">{response.reason}</p>
       ) : (
-        <div className="external-list">
+        <div className="ledger-list">
           {response.participants.slice(0, 12).map((participant) => (
-            <article className="external-row" key={participant.address}>
+            <article className="field-row" key={participant.address}>
               <div>
                 <strong>{shortAddress(participant.address)}</strong>
                 <span>{participant.fillCount} fills · {participant.marketIds.length} markets</span>
               </div>
-              <div className="external-links">
+              <div className="field-links">
                 {participant.explorerTransactions.slice(0, 3).map((url, index) => (
                   <a href={url} key={url} target="_blank" rel="noreferrer">
                     tx {shortHash(participant.txHashes[index] ?? "")} ↗

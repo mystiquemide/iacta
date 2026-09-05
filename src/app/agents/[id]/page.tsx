@@ -20,73 +20,73 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
   const events = state.killfeed.filter((event) => event.agentId === agentId);
 
   return (
-    <main className="proof-shell">
-      <nav className="site-nav arena-nav" aria-label="Primary navigation">
-        <Link className="wordmark" href="/" aria-label="IACTA home">
-          IACTA<span>.</span>
+    <main className="ia-shell">
+      <nav className="ia-nav" aria-label="Primary navigation">
+        <Link className="ia-mark" href="/" aria-label="IACTA home">
+          IACTA<span className="ia-mark-dot">.</span>
         </Link>
-        <div className="arena-nav-links">
-          <Link className="nav-link" href="/arena">Arena</Link>
-          <Link className="nav-link" href="/standings">Standings</Link>
-          <Link className="nav-link" href="/battles">Battles</Link>
-          <a className="nav-link" href={state.chain.explorer} target="_blank" rel="noreferrer">
+        <div className="ia-nav-group">
+          <Link className="ia-nav-link" href="/arena">Arena</Link>
+          <Link className="ia-nav-link" href="/standings">Standings</Link>
+          <Link className="ia-nav-link" href="/battles">Battles</Link>
+          <a className="ia-nav-link" href={state.chain.explorer} target="_blank" rel="noreferrer">
             Explorer <span aria-hidden="true">↗</span>
           </a>
         </div>
       </nav>
 
-      <header className="profile-heading">
+      <header className="board-head">
         <div>
-          <p className="eyebrow"><span className="status-dot" /> IACTA / AGENT PROFILE</p>
-          <h1>{agentId}</h1>
-          <p className="profile-posture">{profile.posture} · {profile.architecture}</p>
+          <p className="poster-eyebrow"><span className="ia-dot" /> IACTA / AGENT PROFILE</p>
+          <h1 className="board-title">{agentId}</h1>
+          <p className="gladiator-posture">{profile.posture} · {profile.architecture}</p>
         </div>
-        <div className="engine-status" aria-live="polite">
-          <span className={`status-pill status-${state.engine.status.toLowerCase()}`}>
+        <div className="engine-box" aria-live="polite">
+          <span className={`engine-pill engine-pill--${state.engine.status.toLowerCase()}`}>
             {state.engine.status.toLowerCase()}
           </span>
-          <p>{state.engine.reason}</p>
+          <p className="engine-note">{state.engine.reason}</p>
         </div>
       </header>
 
-      <section className="profile-grid" aria-label={`${agentId} summary`}>
-        <article className="profile-card">
-          <span className="panel-label">Strategy in plain words</span>
-          <h2>{profile.description}</h2>
+      <section className="gladiator-grid" aria-label={`${agentId} summary`}>
+        <article className="gladiator-card">
+          <span className="ia-label">Strategy in plain words</span>
+          <h2 className="gladiator-desc">{profile.description}</h2>
         </article>
-        <article className="profile-card">
-          <span className="panel-label">Score</span>
-          <strong className="profile-score">{agent?.score ?? "0"}<small> raw</small></strong>
+        <article className="gladiator-card">
+          <span className="ia-label">Score</span>
+          <strong className="gladiator-score">{agent?.score ?? "0"}<small> raw</small></strong>
         </article>
-        <article className="profile-card">
-          <span className="panel-label">Receipts</span>
-          <strong className="profile-number">{events.filter((event) => event.txHash).length}</strong>
-          <span className="profile-help">linked events</span>
+        <article className="gladiator-card">
+          <span className="ia-label">Receipts</span>
+          <strong className="gladiator-number">{events.filter((event) => event.txHash).length}</strong>
+          <span className="gladiator-help">linked events</span>
         </article>
       </section>
 
-      <section className="profile-events" aria-labelledby="profile-events-title">
-        <div className="section-heading">
+      <section className="ledger-panel" aria-labelledby="profile-events-title">
+        <div className="bill">
           <div>
-            <span className="panel-label">Agent history</span>
-            <h2 id="profile-events-title">RECEIPT TRAIL</h2>
+            <span className="ia-label bill-label">Agent history</span>
+            <h2 className="bill-title" id="profile-events-title">RECEIPT TRAIL</h2>
           </div>
-          <Link className="section-note profile-back" href="/battles">View round archive</Link>
+          <Link className="bill-note trail-back" href="/battles">View round archive</Link>
         </div>
         {events.length === 0 ? (
-          <p className="empty-state">No events recorded for this agent.</p>
+          <p className="empty-note">No events recorded for this agent.</p>
         ) : (
-          <div className="profile-event-list">
+          <div className="ledger-list">
             {events.map((event, index) => (
-              <div className="profile-event-row" key={`${event.kind}-${event.txHash ?? "local"}-${index}`}>
-                <span className="event-kind">{event.kind}</span>
-                <span>{event.side ?? event.outcome ?? event.reason ?? "Recorded event"}</span>
+              <div className="trail-row" key={`${event.kind}-${event.txHash ?? "local"}-${index}`}>
+                <span className="trail-kind">{event.kind}</span>
+                <span className="trail-detail">{event.side ?? event.outcome ?? event.reason ?? "Recorded event"}</span>
                 {event.explorer && event.txHash ? (
-                  <a href={event.explorer} target="_blank" rel="noreferrer">
+                  <a className="trail-link" href={event.explorer} target="_blank" rel="noreferrer">
                     {shortHash(event.txHash)} ↗
                   </a>
                 ) : (
-                  <span className="proof-empty">No tx</span>
+                  <span className="proof-none">No tx</span>
                 )}
               </div>
             ))}
@@ -94,11 +94,11 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
         )}
       </section>
 
-      <p className="proof-disclaimer">
+      <p className="rank-disclaimer">
         Strategy descriptions are architecture commitments. Performance claims come from the receipt trail, not from a backtest.
       </p>
 
-      <footer className="site-footer">
+      <footer className="ia-footer">
         <span>IACTA / AGENT PROFILE</span>
         <span>Every claim, a receipt.</span>
       </footer>

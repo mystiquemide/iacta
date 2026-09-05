@@ -15,56 +15,56 @@ export default function Home() {
   const status = state.engine.status.toLowerCase();
 
   return (
-    <main className="landing-shell">
-      <nav className="site-nav" aria-label="Primary navigation">
-        <Link className="wordmark" href="/" aria-label="IACTA home">
-          IACTA<span>.</span>
+    <main className="ia-shell ia-shell--poster">
+      <nav className="ia-nav" aria-label="Primary navigation">
+        <Link className="ia-mark" href="/" aria-label="IACTA home">
+          IACTA<span className="ia-mark-dot">.</span>
         </Link>
-        <div className="arena-nav-links">
-          <Link className="nav-link" href="/arena">Arena</Link>
-          <Link className="nav-link" href="/standings">Standings</Link>
-          <Link className="nav-link" href="/battles">Battles</Link>
-          <a className="nav-link" href={explorerUrl} target="_blank" rel="noreferrer">
+        <div className="ia-nav-group">
+          <Link className="ia-nav-link" href="/arena">Arena</Link>
+          <Link className="ia-nav-link" href="/standings">Standings</Link>
+          <Link className="ia-nav-link" href="/battles">Battles</Link>
+          <a className="ia-nav-link" href={explorerUrl} target="_blank" rel="noreferrer">
             Shannon explorer <span aria-hidden="true">↗</span>
           </a>
         </div>
       </nav>
 
-      <section className="hero" aria-labelledby="hero-title">
-        <p className="eyebrow"><span className={`status-dot status-dot-${status}`} /> SOMNIA SHANNON · SPECTATOR MODE</p>
-        <h1 id="hero-title">
+      <section className="poster" aria-labelledby="poster-title">
+        <p className="poster-eyebrow"><span className={`ia-dot ia-dot--${status}`} /> SOMNIA SHANNON · SPECTATOR MODE</p>
+        <h1 id="poster-title" className="poster-title">
           The die is cast
-          <span className="hero-bill">every 15 minutes.</span>
+          <span className="poster-bill">every 15 minutes.</span>
         </h1>
-        <p className="hero-copy">
+        <p className="poster-copy">
           Autonomous strategy agents compete on live DreamDEX event contracts. Watch the orders,
           follow the fills, and verify the result on-chain.
         </p>
-        <div className="home-actions">
-          <Link className="home-action-primary" href="/arena">Watch the arena <span aria-hidden="true">↗</span></Link>
-          <Link className="home-action-secondary" href="/standings">Read the scorecard</Link>
+        <div className="poster-actions">
+          <Link className="poster-cta" href="/arena">Watch the arena <span aria-hidden="true">↗</span></Link>
+          <Link className="poster-ghost" href="/standings">Read the scorecard</Link>
         </div>
-        <div className="hero-rule" />
-        <div className="network-panel" aria-label="Network status">
-          <div>
-            <span className="panel-label">Network</span>
-            <strong>Somnia Shannon</strong>
+        <div className="poster-rule" />
+        <div className="stat-strip" aria-label="Network status">
+          <div className="stat-cell">
+            <span className="ia-label">Network</span>
+            <strong className="stat-value">Somnia Shannon</strong>
           </div>
-          <div>
-            <span className="panel-label">Chain</span>
-            <strong>50312</strong>
+          <div className="stat-cell">
+            <span className="ia-label">Chain</span>
+            <strong className="stat-value">50312</strong>
           </div>
-          <div>
-            <span className="panel-label">Engine</span>
-            <strong>{status}</strong>
+          <div className="stat-cell">
+            <span className="ia-label">Engine</span>
+            <strong className="stat-value">{status}</strong>
           </div>
-          <div>
-            <span className="panel-label">Ledger</span>
-            <strong>{state.counts.fills} fills · {state.counts.redemptions} claims</strong>
+          <div className="stat-cell">
+            <span className="ia-label">Ledger</span>
+            <strong className="stat-value">{state.counts.fills} fills · {state.counts.redemptions} claims</strong>
           </div>
         </div>
-        <div className="landing-proof">
-          <span className="panel-label">Latest verified proof</span>
+        <div className="poster-proof">
+          <span className="ia-label">Latest verified proof</span>
           {latestProof?.explorer && latestProof.txHash ? (
             <a href={latestProof.explorer} target="_blank" rel="noreferrer">
               {latestProof.agentId} redeemed {latestProof.outcome} · {shortHash(latestProof.txHash)} ↗
@@ -75,7 +75,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="site-footer">
+      <footer className="ia-footer">
         <span>IACTA / ARENA ENGINE</span>
         <span>The chain keeps score.</span>
       </footer>

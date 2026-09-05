@@ -16,80 +16,80 @@ export default function StandingsPage() {
   const agentById = new Map(state.agents.map((agent) => [agent.agentId, agent]));
 
   return (
-    <main className="proof-shell">
-      <nav className="site-nav arena-nav" aria-label="Primary navigation">
-        <Link className="wordmark" href="/" aria-label="IACTA home">
-          IACTA<span>.</span>
+    <main className="ia-shell">
+      <nav className="ia-nav" aria-label="Primary navigation">
+        <Link className="ia-mark" href="/" aria-label="IACTA home">
+          IACTA<span className="ia-mark-dot">.</span>
         </Link>
-        <div className="arena-nav-links">
-          <Link className="nav-link" href="/arena">Arena</Link>
-          <Link className="nav-link" href="/battles">Battles</Link>
-          <a className="nav-link" href={state.chain.explorer} target="_blank" rel="noreferrer">
+        <div className="ia-nav-group">
+          <Link className="ia-nav-link" href="/arena">Arena</Link>
+          <Link className="ia-nav-link" href="/battles">Battles</Link>
+          <a className="ia-nav-link" href={state.chain.explorer} target="_blank" rel="noreferrer">
             Explorer <span aria-hidden="true">↗</span>
           </a>
         </div>
       </nav>
 
-      <header className="standings-heading">
+      <header className="board-head">
         <div>
-          <p className="eyebrow"><span className="status-dot" /> IACTA / PROOF LEDGER</p>
-          <h1>STANDINGS</h1>
-          <p className="standings-copy">
+          <p className="poster-eyebrow"><span className="ia-dot" /> IACTA / PROOF LEDGER</p>
+          <h1 className="board-title">STANDINGS</h1>
+          <p className="board-copy">
             Score equals redeemed proceeds plus sell proceeds minus buy costs.
             Every component below points to a stored transaction receipt.
           </p>
         </div>
-        <div className="engine-status" aria-live="polite">
-          <span className={`status-pill status-${state.engine.status.toLowerCase()}`}>
+        <div className="engine-box" aria-live="polite">
+          <span className={`engine-pill engine-pill--${state.engine.status.toLowerCase()}`}>
             {state.engine.status.toLowerCase()}
           </span>
-          <p>{state.engine.reason}</p>
+          <p className="engine-note">{state.engine.reason}</p>
         </div>
       </header>
 
-      <section className="standings-panel" aria-labelledby="standings-title">
-        <div className="standings-panel-head">
+      <section className="ledger-panel" aria-labelledby="standings-title">
+        <div className="rank-head">
           <div>
-            <span className="panel-label">Receipt-backed ranking</span>
-            <h2 id="standings-title">CURRENT SCORECARD</h2>
+            <span className="ia-label">Receipt-backed ranking</span>
+            <h2 className="rank-head-title" id="standings-title">CURRENT SCORECARD</h2>
           </div>
-          <span className="section-note">{state.counts.redemptions} redemption receipts</span>
+          <span className="bill-note">{state.counts.redemptions} redemption receipts</span>
         </div>
 
         {state.standings.length === 0 ? (
-          <p className="empty-state">No standings exist until the engine records a fill or redemption.</p>
+          <p className="empty-note">No standings exist until the engine records a fill or redemption.</p>
         ) : (
-          <div className="standings-list">
+          <div className="ledger-list">
             {state.standings.map((standing, index) => {
               const agent = agentById.get(standing.agentId);
               const scoreClass = Number(standing.score) > 0
-                ? "score-positive"
+                ? "score-pos"
                 : Number(standing.score) < 0
-                  ? "score-negative"
+                  ? "score-neg"
                   : "score-flat";
               const proofLinks = [
                 ...standing.fillTxHashes.map((hash) => ({ hash, label: "fill" })),
                 ...standing.redemptionTxHashes.map((hash) => ({ hash, label: "redeem" })),
               ];
               return (
-                <article className="standings-row" key={standing.agentId}>
-                  <span className="standing-rank">{String(index + 1).padStart(2, "0")}</span>
-                  <div className="standing-agent">
-                    <h3><Link href={`/agents/${standing.agentId}`}>{standing.agentId}</Link></h3>
-                    <span>{agent?.fillCount ?? 0} fills · {agent?.redemptionCount ?? 0} claims</span>
+                <article className="rank-row" key={standing.agentId}>
+                  <span className="rank-no">{String(index + 1).padStart(2, "0")}</span>
+                  <div>
+                    <h3 className="rank-name"><Link href={`/agents/${standing.agentId}`}>{standing.agentId}</Link></h3>
+                    <span className="rank-facts">{agent?.fillCount ?? 0} fills · {agent?.redemptionCount ?? 0} claims</span>
                   </div>
-                  <div className={`standing-score ${scoreClass}`}>
+                  <div className={`rank-score ${scoreClass}`}>
                     <span>{standing.score}</span>
                     <small>raw</small>
                   </div>
-                  <div className="standing-breakdown">
+                  <div className="rank-breakdown">
                     <span>redeemed {standing.redeemedProceeds}</span>
                     <span>sold {standing.sellProceeds}</span>
                     <span>bought {standing.buyCosts}</span>
                   </div>
-                  <div className="standing-proof">
+                  <div className="rank-proof">
                     {proofLinks.length === 0 ? (
-                      <span className="proof-empty">No receipt activity</span>
+                      <span className="proof-none">No receipt activity</span>
                     ) : (
                       proofLinks.map(({ hash, label }) => (
                         <a
@@ -110,11 +110,11 @@ export default function StandingsPage() {
         )}
       </section>
 
-      <p className="proof-disclaimer">
+      <p className="rank-disclaimer">
         The chain keeps score. This page reads the local event ledger and exposes the receipts used to recompute it.
       </p>
 
-      <footer className="site-footer">
+      <footer className="ia-footer">
         <span>IACTA / PROOF LEDGER</span>
         <span>Every claim, a receipt.</span>
       </footer>

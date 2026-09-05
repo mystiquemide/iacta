@@ -19,49 +19,49 @@ export default function BattlesPage() {
   const state = readArenaState();
 
   return (
-    <main className="proof-shell">
-      <nav className="site-nav arena-nav" aria-label="Primary navigation">
-        <Link className="wordmark" href="/" aria-label="IACTA home">
-          IACTA<span>.</span>
+    <main className="ia-shell">
+      <nav className="ia-nav" aria-label="Primary navigation">
+        <Link className="ia-mark" href="/" aria-label="IACTA home">
+          IACTA<span className="ia-mark-dot">.</span>
         </Link>
-        <div className="arena-nav-links">
-          <Link className="nav-link" href="/arena">Arena</Link>
-          <Link className="nav-link" href="/standings">Standings</Link>
-          <a className="nav-link" href={state.chain.explorer} target="_blank" rel="noreferrer">
+        <div className="ia-nav-group">
+          <Link className="ia-nav-link" href="/arena">Arena</Link>
+          <Link className="ia-nav-link" href="/standings">Standings</Link>
+          <a className="ia-nav-link" href={state.chain.explorer} target="_blank" rel="noreferrer">
             Explorer <span aria-hidden="true">↗</span>
           </a>
         </div>
       </nav>
 
-      <header className="archive-heading">
+      <header className="board-head">
         <div>
-          <p className="eyebrow"><span className="status-dot" /> IACTA / ROUND ARCHIVE</p>
-          <h1>BATTLES</h1>
-          <p className="standings-copy">
+          <p className="poster-eyebrow"><span className="ia-dot" /> IACTA / ROUND ARCHIVE</p>
+          <h1 className="board-title">BATTLES</h1>
+          <p className="board-copy">
             Recorded market windows, ordered by expiry. A row becomes proof when its stored events point to receipts.
           </p>
         </div>
-        <div className="engine-status" aria-live="polite">
-          <span className={`status-pill status-${state.engine.status.toLowerCase()}`}>
+        <div className="engine-box" aria-live="polite">
+          <span className={`engine-pill engine-pill--${state.engine.status.toLowerCase()}`}>
             {state.engine.status.toLowerCase()}
           </span>
-          <p>{state.engine.reason}</p>
+          <p className="engine-note">{state.engine.reason}</p>
         </div>
       </header>
 
-      <section className="archive-panel" aria-labelledby="archive-title">
-        <div className="standings-panel-head">
+      <section className="ledger-panel" aria-labelledby="archive-title">
+        <div className="rank-head">
           <div>
-            <span className="panel-label">Event-store history</span>
-            <h2 id="archive-title">RECORDED WINDOWS</h2>
+            <span className="ia-label">Event-store history</span>
+            <h2 className="rank-head-title" id="archive-title">RECORDED WINDOWS</h2>
           </div>
-          <span className="section-note">{state.rounds.length} round rows</span>
+          <span className="bill-note">{state.rounds.length} round rows</span>
         </div>
 
         {state.rounds.length === 0 ? (
-          <p className="empty-state">No rounds have been recorded yet.</p>
+          <p className="empty-note">No rounds have been recorded yet.</p>
         ) : (
-          <div className="archive-list">
+          <div className="ledger-list">
             {state.rounds.map((round, index) => {
               const events = state.killfeed.filter((event) => event.marketId === round.marketId);
               const fills = events.filter((event) => event.kind === "FILL");
@@ -72,25 +72,25 @@ export default function BattlesPage() {
                   .map((event) => [event.txHash, event.explorer] as const),
               ).entries()];
               return (
-                <article className="archive-row" key={round.marketId}>
-                  <div className="archive-index">{String(index + 1).padStart(2, "0")}</div>
-                  <div className="archive-main">
-                    <div className="archive-title-line">
-                      <h3>{roundLabel(round)}</h3>
-                      <span className={`archive-status ${round.isLive ? "archive-live" : "archive-history"}`}>
+                <article className="history-row" key={round.marketId}>
+                  <div className="history-no">{String(index + 1).padStart(2, "0")}</div>
+                  <div className="history-main">
+                    <div className="history-title-line">
+                      <h3 className="history-title">{roundLabel(round)}</h3>
+                      <span className={`history-status ${round.isLive ? "st-live" : "st-history"}`}>
                         {round.isLive ? "live" : "history"}
                       </span>
                     </div>
-                    <span className="archive-id">{round.marketId}</span>
+                    <span className="history-id">{round.marketId}</span>
                   </div>
-                  <div className="archive-facts">
+                  <div className="history-facts">
                     <span>{round.asset}</span>
                     <span>{statusLabel(round)}</span>
                     <span>{fills.length} fills · {redemptions.length} claims</span>
                   </div>
-                  <div className="archive-links">
+                  <div className="history-links">
                     {links.length === 0 ? (
-                      <span className="proof-empty">No tx events</span>
+                      <span className="proof-none">No tx events</span>
                     ) : (
                       links.map(([hash, explorer]) => (
                         <a href={explorer ?? "#"} key={hash} target="_blank" rel="noreferrer">
@@ -106,11 +106,11 @@ export default function BattlesPage() {
         )}
       </section>
 
-      <p className="proof-disclaimer">
+      <p className="rank-disclaimer">
         Resolution and redemption are shown only after the engine records them. This archive never infers a winner from an unverified balance.
       </p>
 
-      <footer className="site-footer">
+      <footer className="ia-footer">
         <span>IACTA / ROUND ARCHIVE</span>
         <span>Every claim, a receipt.</span>
       </footer>
