@@ -22,7 +22,7 @@ export const DEFAULT_WRITE_GAS_LIMIT = 3_000_000n;
 export const DEFAULT_MAX_FEE_PER_GAS = 9_000_000_000n;
 
 export const WALLET_ROLES = ["OPS", "RETIARIUS", "SECUTOR", "THRAEX", "MURMILLO"] as const;
-export const FUNDABLE_WALLET_ROLES = [...WALLET_ROLES, "FRESH", "HARUSPEX", "PROVOCATOR"] as const;
+export const FUNDABLE_WALLET_ROLES = [...WALLET_ROLES, "FRESH", "HARUSPEX", "PROVOCATOR", "SPECTATOR"] as const;
 export type WalletRole = (typeof FUNDABLE_WALLET_ROLES)[number];
 
 function positiveBigIntEnv(name: string, fallback: bigint): bigint {

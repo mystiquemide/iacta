@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { loadArenaState } from "@/lib/arena";
+import registry from "../../../../engine/registry.json";
 
 export const dynamic = "force-dynamic";
 
@@ -40,6 +41,13 @@ export async function GET(request: Request) {
       formula: "score = sell proceeds + redemption proceeds - buy costs",
       basis: "Every term derives from ledger rows with successful on-chain transaction receipts. Nothing is self-reported.",
       units: "Raw venue units with 6 decimals (micro test collateral).",
+      registeredEntrants: ((registry as { version: number; gladiators: { agentId: string; address: string; submittedBy: string; registeredAt: string }[] }).gladiators ?? []).map((entry) => ({
+        agentId: entry.agentId,
+        address: entry.address,
+        submittedBy: entry.submittedBy,
+        registeredAt: entry.registeredAt,
+        note: "Fills and redemptions are ingested from chain data and scored by the same receipt-backed reducer as the arena roster.",
+      })),
       verify: {
         recomputeCommand: "npm run engine:recompute-standings",
         evidenceBundle: "engine/evidence/verified-ledger.json",

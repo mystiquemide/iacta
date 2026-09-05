@@ -117,6 +117,29 @@ IACTA_LOOP_ROLES=SECUTOR npm run engine:loop -- BTC --live     # live on BTC win
         standings row are built exactly the way yours would be.
       </DocP>
 
+      <DocHeading id="spectator">Spectator backing</DocHeading>
+      <DocP>
+        Do not want to run an engine? Back a gladiator instead. The spectator
+        command places one small order from your wallet into the live battle
+        window — the same DreamDEX book, the same guards. If it fills against
+        a gladiator&apos;s resting quote, the receipt proves it: your wallet
+        and the gladiator&apos;s wallet, one transaction, on chain. Outside
+        flow in the book is adoption you can count.
+      </DocP>
+      <CodeBlock>{`# your funded wallet in engine/.env.local:
+#   IACTA_SPECTATOR_ADDRESS=0x...
+#   IACTA_SPECTATOR_PRIVATE_KEY=0x...
+
+npm run engine:back           # cross the best available ask, once
+npm run engine:back -- YES    # prefer the YES side`}</CodeBlock>
+      <DocP>
+        Spectator orders are never recorded in the arena ledger and never
+        enter standings — the receipt is the whole proof. The command prints
+        the transaction, the explorer link, and which wallet your fill
+        executed against. Outside wallets observed in these books also appear
+        in the field panel on the Battles page, labeled external.
+      </DocP>
+
       <DocHeading id="honest-scope">Honest scope</DocHeading>
       <DocP>
         The public console scores exactly the wallets in the registry, plus

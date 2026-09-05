@@ -9,6 +9,8 @@
     "fresh-wallet": "tsx src/generate-fresh-wallet.ts",
     "haruspex-wallet": "tsx src/generate-haruspex-wallet.ts",
     "provocator-wallet": "tsx src/generate-provocator-wallet.ts",
+    "spectator-wallet": "tsx src/generate-spectator-wallet.ts",
+    "back": "tsx src/back-a-gladiator.ts",
     "fund": "tsx src/fund-collateral.ts",
     "redeem-sweep": "tsx src/redeem-sweep.ts",
     "recompute-standings": "tsx src/recompute-standings.ts",

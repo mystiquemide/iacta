@@ -21,6 +21,8 @@
     "engine:fresh-wallet": "npm --workspace engine run fresh-wallet",
     "engine:haruspex-wallet": "npm --workspace engine run haruspex-wallet",
     "engine:provocator-wallet": "npm --workspace engine run provocator-wallet",
+    "engine:spectator-wallet": "npm --workspace engine run spectator-wallet",
+    "engine:back": "npm --workspace engine run back --",
     "engine:fund": "npm --workspace engine run fund",
     "engine:redeem-sweep": "npm --workspace engine run redeem-sweep --",
     "engine:recompute-standings": "npm --workspace engine run recompute-standings",

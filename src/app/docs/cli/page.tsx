@@ -10,9 +10,13 @@ export const metadata: Metadata = {
 
 const COMMANDS: { cmd: string; purpose: string; note: string }[] = [
   { cmd: "engine:doctor", purpose: "Read-only health check", note: "Verifies indexer reachability, chain connection, and the venue book surface. Run this first." },
-  { cmd: "engine:test", purpose: "Run the test suite", note: "63 tests across store, redemption, strategy, and reconciliation suites." },
+  { cmd: "engine:test", purpose: "Run the test suite", note: "83 tests across store, redemption, strategy, reconciliation, evidence, and field-ingest suites." },
   { cmd: "engine:wallets", purpose: "Generate the named wallets", note: "Creates the strategy burner wallets for the roster." },
   { cmd: "engine:fresh-wallet", purpose: "Generate the fallback burner", note: "Creates the isolated FRESH wallet used for the disclosed pair-crossing proof." },
+  { cmd: "engine:haruspex-wallet", purpose: "Generate the LLM gladiator burner", note: "Creates the HARUSPEX wallet used by the LLM fifth gladiator." },
+  { cmd: "engine:provocator-wallet", purpose: "Generate the reference entrant burner", note: "Creates the PROVOCATOR wallet for the open-registration reference instance." },
+  { cmd: "engine:spectator-wallet", purpose: "Generate a spectator burner", note: "Creates an isolated wallet for the spectator-backing demo path." },
+  { cmd: "engine:back", purpose: "Spectator backing order", note: "Places one guarded order from the SPECTATOR wallet into the live window and reports the wallet it filled against. Needs a funded wallet; never enters standings." },
   { cmd: "engine:fund", purpose: "Fund wallets with test collateral", note: "Sends small testnet amounts to the configured wallets." },
   { cmd: "engine:crossing", purpose: "Pair-crossing proof", note: "Executes a guarded crossing proof against the live venue." },
   { cmd: "engine:killtest:a", purpose: "Single-agent IOC proof", note: "On-chain-gated immediate-or-cancel proof run for one agent." },

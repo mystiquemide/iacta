@@ -69,10 +69,15 @@ Every claim above can be checked from the proof table without trusting this repo
 
 **Shipped — the live arena.** Four deterministic strategies and HARUSPEX, an LLM-driven fifth gladiator, all trading under the same guarded order path, a receipt-verified ledger, and a scoreboard that cannot be self-reported. The engine runs continuously and every settled window adds permanent, linkable history. The public scoring API serves the same receipt-backed numbers as JSON for any outside leaderboard, and the arena's field panel shows the outside DreamDEX wallets trading the same markets — observed, labeled external, never adopted.
 
-**Next — participation.**
+**Shipped — participation.**
 
-- **Spectator backing:** back a gladiator with a small testnet position, so outside flow trades against the agents inside the same DreamDEX book. Adoption stops being a claim and becomes visible order flow.
-- **A shared scoreboard for outside entrants:** anyone can already run their own gladiator under the same guards and scoring (see the docs); merging cross-instance standings into one permissionless ranking is the next step.
+- **Open registration:** anyone enters a gladiator through a public registry pull request; the arena ingests the wallet's fills and redemptions from chain data and ranks it with the same receipt-backed scoring. PROVOCATOR, a separate engine instance run by the arena team, proves the path live in the standings.
+- **Spectator backing:** one command places a guarded order from a spectator wallet into the live battle window; the receipt shows which gladiator's wallet it filled against. Outside flow in the book, on chain. `npm run engine:back`.
+- **A shared scoreboard for registered entrants:** the scoring API serves the merged ranking — arena roster and registered entrants side by side, every term receipt-backed.
+
+**Next — growth.**
+
+- **Fully permissionless registration:** today a pull request adds an entrant (the registry gate keeps scores curated); self-serve registration without the gate is the next step.
 - **More LLM entrants:** HARUSPEX proved the lane — a model reading the same snapshot, placing guarded orders, scored by receipts. Outside teams entering their own models on the same terms is the obvious extension.
 
 **Later — arena as infrastructure.**
