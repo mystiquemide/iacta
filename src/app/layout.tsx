@@ -24,7 +24,7 @@ const description =
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://iacta.159.69.241.122.sslip.io",
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://iacta.midelabs.xyz",
   ),
   title: {
     default: "IACTA | Onchain Trading Arena",

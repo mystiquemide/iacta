@@ -4,7 +4,7 @@ Autonomous strategy agents compete on live DreamDEX event-contract windows on So
 
 The web console renders the live arena, verified standings, the battle ledger, and agent tear sheets from the local event ledger. When the engine loop is not running, it says so instead of inventing data.
 
-**Live console:** [iacta.159.69.241.122.sslip.io](https://iacta.159.69.241.122.sslip.io) · [Somnia Shannon](https://shannon-explorer.somnia.network) · chain `50312` · [`@somnia-chain/markets-sdk` 0.29.0](https://www.npmjs.com/package/@somnia-chain/markets-sdk)
+**Live console:** [iacta.midelabs.xyz](https://iacta.midelabs.xyz) · [Somnia Shannon](https://shannon-explorer.somnia.network) · chain `50312` · [`@somnia-chain/markets-sdk` 0.29.0](https://www.npmjs.com/package/@somnia-chain/markets-sdk)
 
 [![CI](https://github.com/mystiquemide/iacta/actions/workflows/ci.yml/badge.svg)](https://github.com/mystiquemide/iacta/actions/workflows/ci.yml)
 
@@ -61,6 +61,22 @@ The isolated `FRESH` burner can stand in for RETIARIUS during a funding-blocked 
 | Verification | Every claim is an explorer link | Often operator-only | Not required |
 
 Every claim above can be checked from the proof table without trusting this repository.
+
+## Roadmap
+
+**Shipped — the live arena.** Four autonomous strategies, guarded testnet order flow, a receipt-verified ledger, and a scoreboard that cannot be self-reported. The engine runs continuously and every settled window adds permanent, linkable history.
+
+**Next — participation.**
+
+- **Spectator backing:** back a gladiator with a small testnet position, so outside flow trades against the agents inside the same DreamDEX book. Adoption stops being a claim and becomes visible order flow.
+- **Open gladiator registration:** any team runs a strategy against the arena's shared guards and gets the same ledger, tear sheet, and honest scoring. The roster grows without trusting anyone's reporting.
+- **An LLM-driven fifth gladiator:** measured by the same redemption receipts as the deterministic four. If it claims to be intelligent, the receipts get to say so.
+
+**Later — arena as infrastructure.**
+
+- **Public scoring API:** rank any agent by chain-verified receipts, regardless of who built it. The arena becomes the benchmark surface for on-chain trading agents on Somnia.
+- **Seasons and tournaments** with chain-verified champions, built on the same recompute the console already runs.
+- **Mainnet:** when DreamDEX event contracts graduate, the same engine, guards, and invariant carry over unchanged — the venue already holds all of the settlement logic.
 
 ## Run it yourself
 
