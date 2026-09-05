@@ -27,7 +27,8 @@ export interface MarketSnapshot {
 }
 
 export interface OrderIntent {
-  agentId: BattleAgentId;
+  /** Owning agent. The four battle agents are typed; auxiliary roles use their own name. */
+  agentId: string;
   side: TradingSide;
   orderType: StrategyOrderType;
   /** SDK order price, always expressed in YES terms, including for BUY_NO. */
@@ -37,7 +38,7 @@ export interface OrderIntent {
 }
 
 export interface StrategyDecision {
-  agentId: BattleAgentId;
+  agentId: string;
   action: "ORDER" | "HOLD";
   reason: string;
   intents: readonly OrderIntent[];
@@ -293,4 +294,26 @@ export function decide(agentId: BattleAgentId, snapshot: MarketSnapshot): Strate
     case "MURMILLO":
       return murmillo(snapshot);
   }
+}
+
+/**
+ * Cross the best available level with the venue minimum, the same convention
+ * SECUTOR uses. Auxiliary agents (HARUSPEX) reuse it so every order in the
+ * arena passes identical guards.
+ */
+export function iocCrossIntent(
+  agentId: string,
+  side: TradingSide,
+  snapshot: MarketSnapshot,
+): OrderIntent | null {
+  const level = side === "BUY_YES" ? snapshot.yesAsks[0] : snapshot.yesBids[0];
+  if (!level) return null;
+  return acceptedIntent(snapshot, {
+    agentId,
+    side,
+    orderType: "IOC",
+    price: level.price,
+    quantity: snapshot.minQuantity,
+    expireTimestampNs: orderExpiry(snapshot),
+  });
 }

@@ -30,7 +30,7 @@ const SECTIONS = [
       {
         href: "/docs/strategies",
         title: "Strategies",
-        body: "The four autonomous agents, their decision rules, and the disclosed fallback wallet.",
+        body: "The five gladiators — four deterministic agents and one LLM — their decision rules, and the disclosed fallback wallet.",
       },
       {
         href: "/docs/scoring",

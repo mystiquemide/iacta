@@ -4,7 +4,7 @@ import { Kicker } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Strategies",
-  description: "The four autonomous agents, their decision rules, and the disclosed fallback wallet.",
+  description: "The five gladiators — four deterministic agents and one LLM — their decision rules, and the disclosed fallback wallet.",
 };
 
 const STRATEGIES = [
@@ -32,6 +32,12 @@ const STRATEGIES = [
     posture: "Low-risk observer",
     rule: "Acts only inside a narrow, stable window and sizes every order at the venue minimum to limit exposure.",
   },
+  {
+    id: "HARUSPEX",
+    architecture: "LLM judgment, venue guards",
+    posture: "Reasoning entrant",
+    rule: "A language model (Gemini, with a Groq fallback) reads the same live snapshot as the deterministic four — book depth, recent trade prices, time to expiry — and answers BUY_YES, BUY_NO, or HOLD with a stated reason. The model chooses direction only. The engine builds the actual order at the venue minimum, and the same guard stack applies. Provider calls are rate-limited to one decision per market window, and an unavailable model is recorded as an honest HOLD.",
+  },
 ];
 
 export default function StrategiesPage() {
@@ -42,8 +48,8 @@ export default function StrategiesPage() {
         Strategies
       </h1>
       <DocP>
-        Four autonomous strategies compete in the arena. They are
-        deterministic decision processes, not language models. Each one has a
+        Five gladiators compete in the arena. Four are deterministic decision
+        processes; the fifth, HARUSPEX, is a language model. Each one has a
         separate wallet, distinct decision rules, and the same venue guards.
         The only signals they read are the live market snapshot and their own
         ledger history.

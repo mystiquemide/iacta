@@ -49,6 +49,7 @@ No redemption, no payout credit. The score is `redeemed proceeds + sell proceeds
 | SECUTOR | Momentum IOC | Follows recent direction and crosses the best available level. |
 | THRAEX | Mean reversion | Fades a move when the latest YES price is extended from its recent mean. |
 | MURMILLO | Conservative minimum lot | Trades only in a narrow, stable window with the venue minimum quantity. |
+| HARUSPEX | LLM judgment, venue guards | Reasons over the same live snapshot and answers BUY_YES, BUY_NO, or HOLD. The model chooses direction only — the engine builds the order at the venue minimum and every guard still applies. Scored by the same receipts as the deterministic four. |
 
 The isolated `FRESH` burner can stand in for RETIARIUS during a funding-blocked proof run. It remains disclosed as a fallback wallet.
 
@@ -64,13 +65,13 @@ Every claim above can be checked from the proof table without trusting this repo
 
 ## Roadmap
 
-**Shipped — the live arena.** Four autonomous strategies, guarded testnet order flow, a receipt-verified ledger, and a scoreboard that cannot be self-reported. The engine runs continuously and every settled window adds permanent, linkable history.
+**Shipped — the live arena.** Four deterministic strategies and HARUSPEX, an LLM-driven fifth gladiator, all trading under the same guarded order path, a receipt-verified ledger, and a scoreboard that cannot be self-reported. The engine runs continuously and every settled window adds permanent, linkable history.
 
 **Next — participation.**
 
 - **Spectator backing:** back a gladiator with a small testnet position, so outside flow trades against the agents inside the same DreamDEX book. Adoption stops being a claim and becomes visible order flow.
 - **Open gladiator registration:** any team runs a strategy against the arena's shared guards and gets the same ledger, tear sheet, and honest scoring. The roster grows without trusting anyone's reporting.
-- **An LLM-driven fifth gladiator:** measured by the same redemption receipts as the deterministic four. If it claims to be intelligent, the receipts get to say so.
+- **A second LLM-driven gladiator lane:** HARUSPEX, the first LLM entrant, is already live and receipt-measured; the next step is letting outside teams enter their own models on the same terms.
 
 **Later — arena as infrastructure.**
 
@@ -120,7 +121,7 @@ Public endpoints can be changed through `.env.example`. Burner keys belong only 
 
 ### Is this an AI model?
 
-The core lineup is four deterministic autonomous strategy processes, not an LLM. Each strategy has a separate wallet attribution, distinct decision rules, and the same order and receipt guards. An LLM agent is outside the core path.
+Four of the five gladiators are deterministic autonomous strategy processes, not LLMs. The fifth, HARUSPEX, is an LLM (Gemini with a Groq fallback) that reads the same live market snapshot and chooses direction — while the engine builds the actual order and every venue guard still applies. Whichever kind of mind places the trade, the score is the same: recomputed from venue redemption receipts, never self-reported. If a model claims to be intelligent, the receipts get to say so.
 
 ### Are the agents self-dealing?
 

@@ -41,6 +41,13 @@ const PROFILES: Record<string, AgentProfile> = {
       "An isolated burner wallet used for a pair-crossing proof while a named wallet was unfunded. Disclosed whenever it appears.",
     posture: "Disclosed fallback",
   },
+  HARUSPEX: {
+    agentId: "HARUSPEX",
+    architecture: "LLM judgment, venue guards",
+    behavior:
+      "Reads the same live market snapshot as the deterministic four, reasons over the book and recent trades, and answers BUY_YES, BUY_NO, or HOLD. The engine builds the order at the venue minimum and every guard still applies.",
+    posture: "Reasoning entrant",
+  },
 };
 
 export function profileFor(agentId: string): AgentProfile {

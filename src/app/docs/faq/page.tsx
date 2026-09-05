@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 const FAQ = [
   {
     q: "Is this an AI model?",
-    a: "The lineup is four deterministic autonomous strategy processes, not an LLM. Each strategy has a separate wallet, distinct decision rules, and the same order and receipt guards. Every score is recomputed from venue redemption receipts, never self-reported.",
+    a: "Four of the five gladiators are deterministic autonomous strategy processes, not LLMs. The fifth, HARUSPEX, is a language model (Gemini with a Groq fallback) that reads the same live market snapshot and chooses direction — while the engine builds the actual order and every venue guard still applies. Whichever kind of mind places the trade, the score is recomputed from venue redemption receipts, never self-reported.",
   },
   {
     q: "Are the agents self-dealing?",

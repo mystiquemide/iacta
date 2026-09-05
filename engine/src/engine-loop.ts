@@ -23,12 +23,14 @@ import {
   BATTLE_AGENT_IDS,
   decide,
   guardOrderIntent,
+  iocCrossIntent,
   type BattleAgentId,
   type BookLevel,
   type MarketSnapshot,
   type OrderIntent,
   type StrategyDecision,
 } from "./strategies.js";
+import { LLMAdvisor, llmProvidersFromEnv, type LLMVerdict } from "./llm-advisor.js";
 import { EventStore, type FillRecord } from "./store.js";
 
 const MIN_HEADROOM_SECONDS = 180;
@@ -47,7 +49,7 @@ const binaryPoolEventsAbi = parseAbi([
   "event SetMinted(address indexed payer, address indexed yesTo, address indexed noTo, uint256 amount)",
 ]);
 
-export type LoopRole = BattleAgentId | "FRESH";
+export type LoopRole = BattleAgentId | "FRESH" | "HARUSPEX";
 export { collateralRequired, chooseVenue } from "./trading-helpers.js";
 
 export interface LoopTradeActivity {
@@ -73,7 +75,7 @@ export interface MarketSnapshotInput {
 
 export interface PlannedRoleDecision {
   role: LoopRole;
-  strategyId: BattleAgentId;
+  strategyId: string;
   decision: StrategyDecision;
 }
 
@@ -84,7 +86,7 @@ export interface LoopCycleReport {
   venueId: string | null;
   decisions: {
     role: LoopRole;
-    strategy: BattleAgentId;
+    strategy: string;
     action: StrategyDecision["action"];
     reason: string;
     intentCount: number;
@@ -158,18 +160,41 @@ export function planDecisions(
   return agentIds.map((agentId) => decide(agentId, snapshot));
 }
 
-function strategyForRole(role: LoopRole): BattleAgentId {
-  return role === "FRESH" ? "RETIARIUS" : role;
+function strategyForRole(role: LoopRole): string {
+  if (role === "FRESH") return "RETIARIUS";
+  return role;
 }
 
 export function planRoleDecisions(
   roles: readonly LoopRole[],
   snapshot: MarketSnapshot,
 ): PlannedRoleDecision[] {
-  return roles.map((role) => {
-    const strategyId = strategyForRole(role);
-    return { role, strategyId, decision: decide(strategyId, snapshot) };
-  });
+  return roles
+    .filter((role) => role !== "HARUSPEX")
+    .map((role) => {
+      const strategyId = strategyForRole(role);
+      return { role, strategyId, decision: decide(strategyId as BattleAgentId, snapshot) };
+    });
+}
+
+/**
+ * HARUSPEX turns an LLM verdict into the same guarded order shape as every
+ * other gladiator: direction from the model, price and quantity from the
+ * venue's live best level and minimum lot, re-checked by the on-chain guards.
+ */
+export function haruspexDecision(verdict: LLMVerdict | null, snapshot: MarketSnapshot): StrategyDecision {
+  const base: StrategyDecision = {
+    agentId: "HARUSPEX",
+    action: "HOLD",
+    reason: verdict
+      ? `${verdict.provider}: ${verdict.reason}`
+      : "LLM advisor unavailable; holding",
+    intents: [],
+  };
+  if (!verdict || verdict.action === "HOLD") return base;
+  const intent = iocCrossIntent("HARUSPEX", verdict.action, snapshot);
+  if (!intent) return { ...base, reason: `${base.reason} — no crossable level or guard refused` };
+  return { ...base, action: "ORDER", intents: [intent] };
 }
 
 export function orderTypeFor(intent: OrderIntent): number {
@@ -206,7 +231,7 @@ interface ActiveOrder {
 
 interface LoopAgent {
   role: LoopRole;
-  strategyId: BattleAgentId;
+  strategyId: string;
   address: Address | null;
   exchange: ReturnType<typeof exchangeFor> | null;
 }
@@ -232,6 +257,7 @@ interface LoopRuntime {
   reconciliationLookbackSeconds: number;
   reconciliationLimit: number;
   startupWarnings: string[];
+  llmAdvisor: LLMAdvisor | null;
 }
 
 function message(error: unknown): string {
@@ -257,7 +283,7 @@ function selectedRoles(): LoopRole[] {
     .map((value) => value.trim().toUpperCase())
     .filter(Boolean);
   const roles = configured?.length ? configured : [...BATTLE_AGENT_IDS];
-  const allowed = new Set<LoopRole>([...BATTLE_AGENT_IDS, "FRESH"]);
+  const allowed = new Set<LoopRole>([...BATTLE_AGENT_IDS, "FRESH", "HARUSPEX"]);
   const unknown = roles.filter((role) => !allowed.has(role as LoopRole));
   if (unknown.length > 0) throw new Error(`Unknown loop wallet role(s): ${unknown.join(", ")}`);
   return [...new Set(roles)] as LoopRole[];
@@ -656,6 +682,17 @@ async function runCycle(runtime: LoopRuntime): Promise<LoopCycleReport> {
   const snapshot = marketRead.snapshot;
   pruneActiveOrders(runtime.activeOrders, snapshot.now);
   const planned = planRoleDecisions(runtime.agents.map((agent) => agent.role), snapshot);
+  const haruspexAgent = runtime.agents.find((agent) => agent.role === "HARUSPEX");
+  if (haruspexAgent && !runtime.pausedRoles.has("HARUSPEX")) {
+    const verdict = runtime.llmAdvisor
+      ? await runtime.llmAdvisor.decideForMarket(selected.market.marketId, snapshot)
+      : null;
+    planned.push({
+      role: "HARUSPEX",
+      strategyId: "HARUSPEX",
+      decision: haruspexDecision(verdict, snapshot),
+    });
+  }
   const decisions = planned.map(({ role, strategyId, decision }) => ({
     role,
     strategy: strategyId,
@@ -712,6 +749,7 @@ async function main(): Promise<void> {
   const dryRun = !process.argv.includes("--live");
   const once = process.argv.includes("--once");
   const roles = selectedRoles();
+  const llmProviders = llmProvidersFromEnv();
   const runtime: LoopRuntime = {
     reader: exchangeFor(),
     agents: createAgents(roles, dryRun),
@@ -720,6 +758,9 @@ async function main(): Promise<void> {
     activeOrders: new Map(),
     refusalTimes: new Map(),
     pausedRoles: new Set(),
+    llmAdvisor: roles.includes("HARUSPEX") && llmProviders.length > 0
+      ? new LLMAdvisor({ providers: llmProviders })
+      : null,
     refusalCooldownMs: parsePositiveNumber(process.env.IACTA_LOOP_REFUSAL_COOLDOWN_MS, DEFAULT_REFUSAL_COOLDOWN_MS),
     asset: (process.env.IACTA_LOOP_ASSET ?? loopAssetFromArgv() ?? "BTC").trim().toUpperCase(),
     marketLimit: parsePositiveNumber(process.env.IACTA_LOOP_MARKET_LIMIT, DEFAULT_MARKET_LIMIT, 100),

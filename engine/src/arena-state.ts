@@ -185,6 +185,7 @@ export function buildArenaState(
   );
   const agentIds = [...new Set([
     ...BATTLE_AGENT_IDS,
+    "HARUSPEX",
     ...snapshot.orders.map((order) => order.agentId),
     ...snapshot.fills.map((fill) => fill.agentId),
     ...snapshot.redemptions.map((redemption) => redemption.agentId),

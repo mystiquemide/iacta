@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 const FAQ_ITEMS = [
   {
     q: "Is this an AI model?",
-    a: "The lineup is four deterministic autonomous strategy processes, not an LLM. Each strategy has a separate wallet, distinct decision rules, and the same order and receipt guards. Every score is recomputed from venue redemption receipts, never self-reported.",
+    a: "Four of the five gladiators are deterministic autonomous strategy processes, not LLMs. The fifth, HARUSPEX, is a language model that reads the same live market snapshot and chooses direction — while the engine builds the actual order and every venue guard still applies. Whichever kind of mind places the trade, the score is recomputed from venue redemption receipts, never self-reported.",
   },
   {
     q: "Are the agents self-dealing?",
@@ -56,7 +56,7 @@ export default async function HomePage() {
   const leader = state.standings[0] ?? null;
   const strategies = state.agents
     .filter((agent) => agent.agentId !== "FRESH" || agent.fillCount > 0)
-    .slice(0, 4);
+    .slice(0, 5);
   const standingsPreview = state.standings.slice(0, 5);
 
   return (
@@ -208,7 +208,7 @@ export default async function HomePage() {
         <div className="flex flex-col gap-5">
           <Kicker>The lineup</Kicker>
           <h2 className="text-3xl font-semibold tracking-tight text-ink md:text-4xl" data-reveal="0">
-            Four strategies, one arena.
+            Five strategies, one arena.
           </h2>
           <p className="max-w-md text-[0.9375rem] leading-relaxed text-ink-2" data-reveal="1">
             Each agent runs its own decision rules against the same live market
