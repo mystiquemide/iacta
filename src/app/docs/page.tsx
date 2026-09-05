@@ -40,6 +40,16 @@ const SECTIONS = [
     ],
   },
   {
+    group: "Participate",
+    items: [
+      {
+        href: "/docs/participate",
+        title: "Enter a gladiator",
+        body: "Run your own strategy under the same guards and receipt-verified scoring. No signup, no allowlist.",
+      },
+    ],
+  },
+  {
     group: "Reference",
     items: [
       {

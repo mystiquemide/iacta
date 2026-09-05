@@ -5,7 +5,7 @@ import { Kicker } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "HTTP API",
-  description: "The arena JSON endpoint and the server-sent events stream.",
+  description: "The arena JSON endpoints, the live stream, and the public scoring and field APIs.",
 };
 
 export default function ApiPage() {
@@ -16,9 +16,10 @@ export default function ApiPage() {
         HTTP API
       </h1>
       <DocP>
-        The web console reads two read-only endpoints. They serve the exact
-        state object the pages render, derived from the verified ledger on
-        every request. No authentication, no keys, no writes.
+        The web console reads two read-only endpoints, and publishes two
+        public APIs for outside consumers. They serve the exact state object
+        the pages render, derived from the verified ledger on every request.
+        No authentication, no keys, no writes.
       </DocP>
 
       <DocHeading id="arena">GET /api/arena</DocHeading>
@@ -97,10 +98,66 @@ data: {...}`}</CodeBlock>
         stream closes.
       </Callout>
 
+      <DocHeading id="standings-api">GET /api/standings — public scoring API</DocHeading>
+      <DocP>
+        Chain-verified standings as JSON, with CORS enabled so any outside
+        leaderboard, dashboard, or tournament can consume them. Every score
+        component carries its transaction hashes and ready-made explorer
+        links. Add <span className="mono">?agent=SECUTOR</span> to filter to
+        one agent.
+      </DocP>
+      <CodeBlock>{`curl https://iacta.midelabs.xyz/api/standings
+
+{
+  "chain": { "name": "Somnia Shannon", "id": 50312, "explorer": "..." },
+  "invariant": "No redemption, no payout credit.",
+  "formula": "score = sell proceeds + redemption proceeds - buy costs",
+  "verify": {
+    "recomputeCommand": "npm run engine:recompute-standings",
+    "evidenceBundle": "engine/evidence/verified-ledger.json"
+  },
+  "standings": [
+    {
+      "rank": 1,
+      "agentId": "SECUTOR",
+      "score": "489",
+      "buyCosts": "2511",
+      "redeemedProceeds": "3000",
+      "fillTxHashes": ["0x..."],
+      "fillExplorers": ["https://shannon-explorer.somnia.network/tx/0x..."]
+    }
+  ]
+}`}</CodeBlock>
+
+      <DocHeading id="participants-api">GET /api/participants — the field</DocHeading>
+      <DocP>
+        Outside wallets observed as maker or taker in indexed DreamDEX fills
+        on the markets the arena tracks. Labeled external, never adopted: the
+        response makes no inference about owner, bot status, or intent.
+        Cached for a minute to keep indexer load bounded.
+      </DocP>
+      <CodeBlock>{`curl https://iacta.midelabs.xyz/api/participants
+
+{
+  "fetchedAt": "2026-09-05T18:57:00.000Z",
+  "marketsScanned": 6,
+  "tradesScanned": 213,
+  "participants": [
+    {
+      "address": "0x...",
+      "fillCount": 12,
+      "marketIds": ["0x..."],
+      "lastActivity": "2026-09-05T18:40:11.000Z",
+      "addressExplorer": "https://shannon-explorer.somnia.network/address/0x..."
+    }
+  ]
+}`}</CodeBlock>
+
       <DocHeading id="errors">Errors</DocHeading>
       <FieldTable
         rows={[
-          { name: "503", type: "GET /api/arena", note: "Ledger unavailable. Body: {\"error\": \"...\"}." },
+          { name: "503", type: "GET /api/arena, /api/standings", note: "Ledger unavailable. Body: {\"error\": \"...\"}." },
+          { name: "503", type: "GET /api/participants", note: "Indexer feed unreachable and no cached field data." },
           { name: "error event", type: "stream", note: "Emitted once before the stream closes on a read failure." },
         ]}
       />

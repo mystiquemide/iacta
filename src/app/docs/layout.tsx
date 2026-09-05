@@ -18,6 +18,12 @@ const NAV: { section: string; items: { href: string; label: string }[] }[] = [
     ],
   },
   {
+    section: "Participate",
+    items: [
+      { href: "/docs/participate", label: "Enter a gladiator" },
+    ],
+  },
+  {
     section: "Reference",
     items: [
       { href: "/docs/api", label: "HTTP API" },

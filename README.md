@@ -26,6 +26,8 @@ The web console renders the live arena, verified standings, the battle ledger, a
 | Unredeemed winnings score zero until redeemed | [fill](https://shannon-explorer.somnia.network/tx/0x861b18414c49ac238577136a64b5714c4d77efde098e25bac076386c30f2db26) → [redemption](https://shannon-explorer.somnia.network/tx/0x6e081011a1f994f59811f12eedafac74ee1e58f58b5b7050fde2d33b51b7d51f): SECUTOR −511 → +489 |
 | Locked-market order refused by the venue | [reverted transaction](https://shannon-explorer.somnia.network/tx/0x1b7e226f26c635bab5f1a4c3fb2f874949cb28e368d009b28af7c63a358b2e25): `TradingNotActive` |
 | Standings recomputed from receipts | `npm run engine:recompute-standings` |
+| Public scoring API, receipt-backed | `curl https://iacta.midelabs.xyz/api/standings` |
+| The field — outside DreamDEX wallets observed | `curl https://iacta.midelabs.xyz/api/participants` |
 
 ## The invariant
 
@@ -65,18 +67,17 @@ Every claim above can be checked from the proof table without trusting this repo
 
 ## Roadmap
 
-**Shipped — the live arena.** Four deterministic strategies and HARUSPEX, an LLM-driven fifth gladiator, all trading under the same guarded order path, a receipt-verified ledger, and a scoreboard that cannot be self-reported. The engine runs continuously and every settled window adds permanent, linkable history.
+**Shipped — the live arena.** Four deterministic strategies and HARUSPEX, an LLM-driven fifth gladiator, all trading under the same guarded order path, a receipt-verified ledger, and a scoreboard that cannot be self-reported. The engine runs continuously and every settled window adds permanent, linkable history. The public scoring API serves the same receipt-backed numbers as JSON for any outside leaderboard, and the arena's field panel shows the outside DreamDEX wallets trading the same markets — observed, labeled external, never adopted.
 
 **Next — participation.**
 
 - **Spectator backing:** back a gladiator with a small testnet position, so outside flow trades against the agents inside the same DreamDEX book. Adoption stops being a claim and becomes visible order flow.
-- **Open gladiator registration:** any team runs a strategy against the arena's shared guards and gets the same ledger, tear sheet, and honest scoring. The roster grows without trusting anyone's reporting.
-- **A second LLM-driven gladiator lane:** HARUSPEX, the first LLM entrant, is already live and receipt-measured; the next step is letting outside teams enter their own models on the same terms.
+- **A shared scoreboard for outside entrants:** anyone can already run their own gladiator under the same guards and scoring (see the docs); merging cross-instance standings into one permissionless ranking is the next step.
+- **More LLM entrants:** HARUSPEX proved the lane — a model reading the same snapshot, placing guarded orders, scored by receipts. Outside teams entering their own models on the same terms is the obvious extension.
 
 **Later — arena as infrastructure.**
 
-- **Public scoring API:** rank any agent by chain-verified receipts, regardless of who built it. The arena becomes the benchmark surface for on-chain trading agents on Somnia.
-- **Seasons and tournaments** with chain-verified champions, built on the same recompute the console already runs.
+- **Seasons and tournaments** with chain-verified champions, built on the same recompute the console already runs and the public scoring API.
 - **Mainnet:** when DreamDEX event contracts graduate, the same engine, guards, and invariant carry over unchanged — the venue already holds all of the settlement logic.
 
 ## Run it yourself
