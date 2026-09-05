@@ -31,6 +31,8 @@ import {
   type StrategyDecision,
 } from "./strategies.js";
 import { LLMAdvisor, llmProvidersFromEnv, type LLMVerdict } from "./llm-advisor.js";
+import { loadRegistry, type GladiatorRegistry } from "./registry.js";
+import { sweepFieldActivity, type FieldActivity } from "./field-ingest.js";
 import { EventStore, type FillRecord } from "./store.js";
 
 const MIN_HEADROOM_SECONDS = 180;
@@ -49,7 +51,7 @@ const binaryPoolEventsAbi = parseAbi([
   "event SetMinted(address indexed payer, address indexed yesTo, address indexed noTo, uint256 amount)",
 ]);
 
-export type LoopRole = BattleAgentId | "FRESH" | "HARUSPEX";
+export type LoopRole = BattleAgentId | "FRESH" | "HARUSPEX" | "PROVOCATOR";
 export { collateralRequired, chooseVenue } from "./trading-helpers.js";
 
 export interface LoopTradeActivity {
@@ -162,6 +164,7 @@ export function planDecisions(
 
 function strategyForRole(role: LoopRole): string {
   if (role === "FRESH") return "RETIARIUS";
+  if (role === "PROVOCATOR") return "THRAEX";
   return role;
 }
 
@@ -258,6 +261,9 @@ interface LoopRuntime {
   reconciliationLimit: number;
   startupWarnings: string[];
   llmAdvisor: LLMAdvisor | null;
+  registry: GladiatorRegistry;
+  lastFieldSweepAt: number;
+  fieldSweepIntervalMs: number;
 }
 
 function message(error: unknown): string {
@@ -283,7 +289,7 @@ function selectedRoles(): LoopRole[] {
     .map((value) => value.trim().toUpperCase())
     .filter(Boolean);
   const roles = configured?.length ? configured : [...BATTLE_AGENT_IDS];
-  const allowed = new Set<LoopRole>([...BATTLE_AGENT_IDS, "FRESH", "HARUSPEX"]);
+  const allowed = new Set<LoopRole>([...BATTLE_AGENT_IDS, "FRESH", "HARUSPEX", "PROVOCATOR"]);
   const unknown = roles.filter((role) => !allowed.has(role as LoopRole));
   if (unknown.length > 0) throw new Error(`Unknown loop wallet role(s): ${unknown.join(", ")}`);
   return [...new Set(roles)] as LoopRole[];
@@ -744,6 +750,34 @@ function loopAssetFromArgv(): string | undefined {
   return positional?.trim().toUpperCase();
 }
 
+async function runFieldSweep(runtime: LoopRuntime): Promise<void> {
+  const result = await sweepFieldActivity(
+    async (market, timeoutMs) => {
+      const rows = await withTimeout(
+        runtime.reader.client.getMarketActivity(market.marketId as `0x${string}`, {
+          kinds: ["TRADE", "REDEEM"],
+          limit: 100,
+          pool: market.poolAddress,
+        }),
+        timeoutMs,
+        "field activity read",
+      );
+      // The SDK activity rows are structurally the field-ingest input.
+      return rows as unknown as FieldActivity[];
+    },
+    runtime.store.snapshot().rounds,
+    runtime.store,
+    runtime.registry,
+  );
+  runtime.lastFieldSweepAt = Date.now();
+  if (result.fillsRecorded > 0 || result.redemptionsRecorded > 0 || result.warnings.length > 0) {
+    console.log(jsonSafe({
+      fieldSweep: result,
+      store: { path: runtime.store.path, ...runtime.store.counts() },
+    }));
+  }
+}
+
 async function main(): Promise<void> {
   loadLocalEnv();
   const dryRun = !process.argv.includes("--live");
@@ -774,6 +808,9 @@ async function main(): Promise<void> {
     reconciliationLookbackSeconds: parsePositiveNumber(process.env.IACTA_RECONCILIATION_LOOKBACK_SECONDS, DEFAULT_RECONCILIATION_LOOKBACK_SECONDS, 86_400),
     reconciliationLimit: parsePositiveNumber(process.env.IACTA_RECONCILIATION_LIMIT, DEFAULT_RECONCILIATION_LIMIT, 1_000),
     startupWarnings: [],
+    registry: loadRegistry(),
+    lastFieldSweepAt: 0,
+    fieldSweepIntervalMs: parsePositiveNumber(process.env.IACTA_FIELD_SWEEP_INTERVAL_MS, 300_000, 86_400_000),
   };
   const intervalMs = parsePositiveNumber(process.env.IACTA_LOOP_INTERVAL_MS, DEFAULT_LOOP_INTERVAL_MS, 300_000);
   let stopping = false;
@@ -783,9 +820,17 @@ async function main(): Promise<void> {
 
   try {
     await reconcileStartup(runtime);
+    await runFieldSweep(runtime).catch((error) => {
+      runtime.startupWarnings.push(`field sweep failed: ${message(error).slice(0, 180)}`);
+    });
     do {
       try {
         const report = await runCycle(runtime);
+        if (!once && Date.now() - runtime.lastFieldSweepAt >= runtime.fieldSweepIntervalMs) {
+          await runFieldSweep(runtime).catch((error) => {
+            console.error(`Field sweep failed: ${message(error)}`);
+          });
+        }
         const heartbeatAt = writeHeartbeat(undefined, undefined, dryRun ? "DRY_RUN" : "LIVE");
         console.log(jsonSafe({
           mode: dryRun ? "DRY_RUN" : "LIVE",

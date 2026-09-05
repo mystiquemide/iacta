@@ -1,3 +1,5 @@
+import registry from "../../engine/registry.json";
+
 export interface AgentProfile {
   agentId: string;
   architecture: string;
@@ -5,7 +7,17 @@ export interface AgentProfile {
   posture: string;
 }
 
-const PROFILES: Record<string, AgentProfile> = {
+interface RegistryEntry {
+  agentId: string;
+  address: string;
+  architecture: string;
+  behavior: string;
+  posture: string;
+  submittedBy: string;
+  registeredAt: string;
+}
+
+const BASE_PROFILES: Record<string, AgentProfile> = {
   RETIARIUS: {
     agentId: "RETIARIUS",
     architecture: "Two-sided quoting",
@@ -49,6 +61,26 @@ const PROFILES: Record<string, AgentProfile> = {
     posture: "Reasoning entrant",
   },
 };
+
+/**
+ * Open-registration entrants: profiles come from the public registry in
+ * engine/registry.json, keyed by their wallet address. Their fills and
+ * redemptions are ingested from chain data and scored by the same
+ * receipt-backed reducer as the arena roster.
+ */
+const REGISTRY_PROFILES: Record<string, AgentProfile> = Object.fromEntries(
+  ((registry as { version: number; gladiators: RegistryEntry[] }).gladiators ?? []).map((entry) => [
+    entry.agentId,
+    {
+      agentId: entry.agentId,
+      architecture: entry.architecture,
+      behavior: entry.behavior,
+      posture: entry.posture,
+    },
+  ]),
+);
+
+const PROFILES: Record<string, AgentProfile> = { ...BASE_PROFILES, ...REGISTRY_PROFILES };
 
 export function profileFor(agentId: string): AgentProfile {
   return (

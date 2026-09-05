@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "gladiators": [
+    {
+      "agentId": "PROVOCATOR",
+      "address": "0xaca0cc91f597ee1d7d00dc6ef7f99fc8272d5bed",
+      "architecture": "Mean reversion reference entrant",
+      "behavior": "The first open-registration entrant, run by the arena team itself to prove the registration path end to end: a separate engine instance trading from this wallet, its fills ingested from chain data, and its score derived by the same receipt-backed reducer as the arena roster. An outside team registering gets exactly this treatment.",
+      "posture": "Registered entrant",
+      "submittedBy": "arena-team",
+      "registeredAt": "2026-09-05T19:15:00.000Z"
+    }
+  ]
+}
