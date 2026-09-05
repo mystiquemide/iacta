@@ -90,3 +90,20 @@ test("arena state reader loads a heartbeat and closes its store", () => {
     rmSync(directory, { recursive: true, force: true });
   }
 });
+
+test("arena state exposes recorded rounds newest first with honest live flags", () => {
+  const snapshot = baseSnapshot();
+  snapshot.rounds.push({
+    ...snapshot.rounds[0]!,
+    marketId: `0x${"b".repeat(64)}`,
+    symbol: "BTC-OLDER",
+    expiry: snapshot.rounds[0]!.expiry - 900,
+    status: "Finalized",
+  });
+
+  const state = buildArenaState(snapshot, null, now);
+
+  assert.deepEqual(state.rounds.map((round) => round.marketId), [marketId, `0x${"b".repeat(64)}`]);
+  assert.equal(state.rounds[0]?.isLive, false);
+  assert.equal(state.rounds[1]?.status, "Finalized");
+});

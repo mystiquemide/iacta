@@ -23,6 +23,7 @@ export default function StandingsPage() {
         </Link>
         <div className="arena-nav-links">
           <Link className="nav-link" href="/arena">Arena</Link>
+          <Link className="nav-link" href="/battles">Battles</Link>
           <a className="nav-link" href={state.chain.explorer} target="_blank" rel="noreferrer">
             Explorer <span aria-hidden="true">↗</span>
           </a>
@@ -74,7 +75,7 @@ export default function StandingsPage() {
                 <article className="standings-row" key={standing.agentId}>
                   <span className="standing-rank">{String(index + 1).padStart(2, "0")}</span>
                   <div className="standing-agent">
-                    <h3>{standing.agentId}</h3>
+                    <h3><Link href={`/agents/${standing.agentId}`}>{standing.agentId}</Link></h3>
                     <span>{agent?.fillCount ?? 0} fills · {agent?.redemptionCount ?? 0} claims</span>
                   </div>
                   <div className={`standing-score ${scoreClass}`}>

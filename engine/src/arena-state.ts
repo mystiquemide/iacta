@@ -49,6 +49,7 @@ export interface ArenaState {
   chain: { name: "Somnia Shannon"; id: 50312; explorer: string };
   engine: ArenaEngineState;
   round: ArenaRound | null;
+  rounds: ArenaRound[];
   counts: {
     rounds: number;
     orders: number;
@@ -72,13 +73,6 @@ function defaultHeartbeatPath(): string {
 
 function explorer(txHash: string | null): string | null {
   return txHash ? `${EXPLORER_URL}/tx/${txHash}` : null;
-}
-
-function latestRound(rounds: readonly RoundRecord[]): RoundRecord | null {
-  return rounds.reduce<RoundRecord | null>((latest, round) => {
-    if (!latest || round.expiry > latest.expiry) return round;
-    return latest;
-  }, null);
 }
 
 function isFreshHeartbeat(heartbeatAt: string | null, now: Date): boolean {
@@ -162,12 +156,14 @@ function buildKillfeed(snapshot: EventSnapshot): KillfeedEvent[] {
 function buildRound(
   round: RoundRecord | null,
   now: Date,
+  engineStatus: EngineStatus,
 ): ArenaRound | null {
   if (!round) return null;
   const nowSeconds = Math.floor(now.getTime() / 1_000);
-  const isLive = round.status === "Trading"
+  const marketIsLive = round.status === "Trading"
     && round.tradingStart <= nowSeconds
     && round.expiry > nowSeconds;
+  const isLive = marketIsLive && engineStatus === "LIVE";
   return {
     ...round,
     isLive,
@@ -175,11 +171,20 @@ function buildRound(
   };
 }
 
+function buildRounds(rounds: readonly RoundRecord[], now: Date, engineStatus: EngineStatus): ArenaRound[] {
+  return rounds
+    .map((round) => buildRound(round, now, engineStatus))
+    .filter((round): round is ArenaRound => round !== null)
+    .sort((left, right) => right.expiry - left.expiry);
+}
+
 export function buildArenaState(
   snapshot: EventSnapshot,
   heartbeatAt: string | null,
   now = new Date(),
 ): ArenaState {
+  const engine = buildEngineState(snapshot, heartbeatAt, now);
+  const rounds = buildRounds(snapshot.rounds, now, engine.status);
   const quoteOneByMarket = new Map(
     snapshot.rounds.map((round) => [round.marketId.toLowerCase(), 10n ** BigInt(round.quoteDecimals)]),
   );
@@ -215,8 +220,9 @@ export function buildArenaState(
   return {
     generatedAt: now.toISOString(),
     chain: { name: "Somnia Shannon", id: 50312, explorer: EXPLORER_URL },
-    engine: buildEngineState(snapshot, heartbeatAt, now),
-    round: buildRound(latestRound(snapshot.rounds), now),
+    engine,
+    round: rounds[0] ?? null,
+    rounds,
     counts: {
       rounds: snapshot.rounds.length,
       orders: snapshot.orders.length,

@@ -78,6 +78,7 @@ export default function ArenaLive({ initialState }: { initialState: ArenaState }
         <div className="arena-nav-links">
           <Link className="nav-link" href="/">Home</Link>
           <Link className="nav-link" href="/standings">Standings</Link>
+          <Link className="nav-link" href="/battles">Battles</Link>
           <a className="nav-link" href={state.chain.explorer} target="_blank" rel="noreferrer">
             Explorer <span aria-hidden="true">↗</span>
           </a>
@@ -129,7 +130,7 @@ export default function ArenaLive({ initialState }: { initialState: ArenaState }
                 <span className="agent-index">0{index + 1}</span>
                 <span className="agent-activity">{agent.fillCount} fills</span>
               </div>
-              <h3>{agent.agentId}</h3>
+              <h3><Link href={`/agents/${agent.agentId}`}>{agent.agentId}</Link></h3>
               <p className="agent-score">{agent.score}<small> raw</small></p>
               <div className="agent-meta">
                 <span>redeemed {agent.redeemedProceeds}</span>

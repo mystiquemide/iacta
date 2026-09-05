@@ -553,6 +553,199 @@ h1 {
   margin: -14px 0 0;
 }
 
+.archive-heading,
+.profile-heading {
+  align-items: end;
+  display: flex;
+  gap: 32px;
+  justify-content: space-between;
+  padding: 42px 0 0;
+}
+
+.archive-heading h1,
+.profile-heading h1 {
+  font-size: clamp(3rem, 8vw, 7rem);
+  max-width: none;
+}
+
+.archive-panel,
+.profile-events {
+  background: var(--arena-panel);
+  border: 1px solid var(--arena-line);
+  padding: 20px;
+}
+
+.archive-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.archive-row {
+  align-items: center;
+  border-bottom: 1px solid var(--arena-line);
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 42px minmax(220px, 1.5fr) minmax(150px, 1fr) minmax(150px, 1fr);
+  min-height: 92px;
+}
+
+.archive-row:last-child {
+  border-bottom: 0;
+}
+
+.archive-index,
+.archive-id,
+.archive-facts,
+.archive-status,
+.archive-links,
+.profile-posture,
+.profile-help {
+  color: var(--arena-muted);
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.archive-main {
+  min-width: 0;
+}
+
+.archive-title-line {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.archive-title-line h3 {
+  font-size: 16px;
+  margin: 0;
+}
+
+.archive-status {
+  border: 1px solid currentColor;
+  padding: 4px 6px;
+}
+
+.archive-live {
+  color: #7ed4a0;
+}
+
+.archive-history {
+  color: var(--arena-muted);
+}
+
+.archive-id {
+  display: block;
+  margin-top: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.archive-facts,
+.archive-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  line-height: 1.35;
+}
+
+.archive-links a {
+  color: var(--arena-muted);
+  text-decoration: none;
+}
+
+.archive-links a:hover,
+.archive-links a:focus-visible {
+  color: var(--arena-bone);
+}
+
+.profile-posture {
+  margin: 20px 0 0;
+}
+
+.profile-grid {
+  display: grid;
+  gap: 1px;
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(150px, 1fr));
+}
+
+.profile-card {
+  background: var(--arena-panel);
+  border: 1px solid var(--arena-line);
+  margin-left: -1px;
+  min-height: 170px;
+  padding: 20px;
+}
+
+.profile-card:first-child {
+  margin-left: 0;
+}
+
+.profile-card h2 {
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.3;
+  margin: 28px 0 0;
+  max-width: 620px;
+}
+
+.profile-score,
+.profile-number {
+  color: var(--arena-gold);
+  display: block;
+  font-family: "Courier New", monospace;
+  font-size: 32px;
+  font-weight: 400;
+  margin-top: 32px;
+}
+
+.profile-score small {
+  color: var(--arena-muted);
+  font-size: 9px;
+}
+
+.profile-number {
+  margin-bottom: 8px;
+}
+
+.profile-event-list {
+  border-top: 1px solid var(--arena-line);
+}
+
+.profile-event-row {
+  align-items: center;
+  border-bottom: 1px solid var(--arena-line);
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 120px minmax(0, 1fr) minmax(140px, auto);
+  min-height: 54px;
+}
+
+.profile-event-row:last-child {
+  border-bottom: 0;
+}
+
+.profile-event-row a {
+  color: var(--arena-muted);
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  text-align: right;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.profile-event-row a:hover,
+.profile-event-row a:focus-visible {
+  color: var(--arena-bone);
+}
+
+.profile-back {
+  color: var(--arena-muted);
+  text-decoration: none;
+}
+
 @media (max-width: 600px) {
   .landing-shell {
     padding: 20px 18px 18px;
@@ -589,6 +782,13 @@ h1 {
   }
 
   .standings-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .archive-heading,
+  .profile-heading {
     align-items: flex-start;
     flex-direction: column;
     gap: 20px;
@@ -649,6 +849,45 @@ h1 {
     gap: 10px;
     grid-template-columns: 30px 1fr auto;
     padding: 18px 0;
+  }
+
+  .archive-row {
+    align-items: start;
+    gap: 10px;
+    grid-template-columns: 30px 1fr auto;
+    padding: 18px 0;
+  }
+
+  .archive-facts,
+  .archive-links {
+    grid-column: 2 / -1;
+  }
+
+  .profile-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .profile-card-wide {
+    grid-column: 1 / -1;
+    margin-left: 0;
+  }
+
+  .profile-card:nth-child(3) {
+    margin-left: -1px;
+  }
+
+  .profile-event-row {
+    gap: 8px;
+    grid-template-columns: 1fr auto;
+    padding: 12px 0;
+  }
+
+  .profile-event-row .event-kind {
+    grid-column: 1 / -1;
+  }
+
+  .profile-event-row a {
+    text-align: left;
   }
 
   .standing-score {
