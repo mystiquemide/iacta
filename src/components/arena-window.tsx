@@ -112,8 +112,8 @@ export function ArenaWindow({ initialState }: { initialState: ArenaState }) {
             const standing = standingsByAgent.get(agent.agentId);
             const latest = latestByAgent.get(agent.agentId);
             return (
-              <div key={agent.agentId} className="flex items-center justify-between gap-4 px-4 py-2.5">
-                <div className="flex items-center gap-3">
+              <div key={agent.agentId} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2.5">
+                <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
                   <span className="text-[0.8125rem] font-medium text-ink">
                     {agent.agentId}
                   </span>
@@ -163,7 +163,7 @@ export function ArenaWindow({ initialState }: { initialState: ArenaState }) {
         </div>
         <div className="divide-y divide-line/60">
           {tape.map((event, index) => (
-            <div key={index} className="flex items-center gap-3 px-4 py-1.5">
+            <div key={index} className="flex flex-wrap items-center gap-x-3 gap-y-0.5 px-4 py-1.5">
               <span className="mono text-[0.75rem] text-ink-3">
                 {formatTime(event.occurredAt)}
               </span>

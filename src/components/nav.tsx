@@ -38,11 +38,11 @@ export function Nav({ engineStatus }: NavProps) {
           : "border-transparent bg-transparent"
       }`}
     >
-      <div className="shell grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-6">
+      <div className="shell grid h-14 grid-cols-[1fr_auto_1fr] items-center gap-4 md:gap-6">
         <Link
           href="/"
           aria-label="IACTA home"
-          className="flex items-center text-ink transition-opacity hover:opacity-80"
+          className="col-start-1 flex items-center text-ink transition-opacity hover:opacity-80"
         >
           <Logo height={18} />
         </Link>
@@ -62,7 +62,7 @@ export function Nav({ engineStatus }: NavProps) {
             );
           })}
         </nav>
-        <div className="flex items-center justify-end gap-4">
+        <div className="col-span-2 col-start-2 flex items-center justify-end gap-4 md:col-span-1 md:col-start-3">
           <span
             className="hidden items-center gap-2 text-[0.75rem] font-medium text-ink-2 sm:flex"
             title={

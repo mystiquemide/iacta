@@ -62,16 +62,18 @@ export function HeroChip({ initialState }: { initialState: ArenaState }) {
     ) ?? null;
 
   return (
-    <div className="inline-flex flex-col gap-2 rounded-xs border border-line bg-canvas/70 px-5 py-4 backdrop-blur-sm">
-      <div className="flex items-center gap-3">
-        <span
-          className={`inline-block h-1.5 w-1.5 rounded-full ${
-            live ? "live-dot bg-chart-1" : "bg-ink-3"
-          }`}
-          aria-hidden="true"
-        />
-        <span className="text-[0.75rem] font-medium text-ink-2">
-          {live ? "Trading now" : state.engine.status === "OFFLINE" ? "Engine offline" : "Between windows"}
+    <div className="inline-flex flex-col items-start gap-2 rounded-xs border border-line bg-canvas/70 px-5 py-4 text-left backdrop-blur-sm">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span className="inline-flex items-center gap-2">
+          <span
+            className={`inline-block h-1.5 w-1.5 rounded-full ${
+              live ? "live-dot bg-chart-1" : "bg-ink-3"
+            }`}
+            aria-hidden="true"
+          />
+          <span className="text-[0.75rem] font-medium text-ink-2">
+            {live ? "Trading now" : state.engine.status === "OFFLINE" ? "Engine offline" : "Between windows"}
+          </span>
         </span>
         {round ? (
           <span className="mono text-[0.75rem] text-ink-2">
@@ -80,7 +82,7 @@ export function HeroChip({ initialState }: { initialState: ArenaState }) {
         ) : null}
       </div>
       {round ? (
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
           <span className="text-lg font-semibold tracking-tight text-ink">
             {round.asset} window
           </span>
@@ -93,7 +95,7 @@ export function HeroChip({ initialState }: { initialState: ArenaState }) {
           Next window on resumption
         </span>
       )}
-      <div className="flex items-center gap-2 text-[0.75rem] text-ink-3">
+      <div className="flex max-w-full flex-wrap items-center gap-x-2 gap-y-1 text-[0.75rem] text-ink-3">
         {lastFill ? (
           <>
             <span className="mono">{formatTime(lastFill.occurredAt)}</span>
