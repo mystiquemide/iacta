@@ -813,6 +813,16 @@ async function main(): Promise<void> {
     fieldSweepIntervalMs: parsePositiveNumber(process.env.IACTA_FIELD_SWEEP_INTERVAL_MS, 300_000, 86_400_000),
   };
   const intervalMs = parsePositiveNumber(process.env.IACTA_LOOP_INTERVAL_MS, DEFAULT_LOOP_INTERVAL_MS, 300_000);
+  // The heartbeat means the engine process is alive and watching; it must stay
+  // fresh between cycles, which at throttled cadences are minutes apart.
+  const heartbeatTimer = setInterval(() => {
+    try {
+      writeHeartbeat(undefined, undefined, dryRun ? "DRY_RUN" : "LIVE");
+    } catch (error) {
+      console.error(`Heartbeat write failed: ${message(error)}`);
+    }
+  }, Math.min(intervalMs / 2, 15_000));
+  heartbeatTimer.unref();
   let stopping = false;
   const stop = () => { stopping = true; };
   process.once("SIGINT", stop);
@@ -847,6 +857,7 @@ async function main(): Promise<void> {
       await delay(intervalMs);
     } while (!stopping);
   } finally {
+    clearInterval(heartbeatTimer);
     runtime.reader.client.stopLive();
     for (const agent of runtime.agents) agent.exchange?.client.stopLive();
     runtime.store.close();
