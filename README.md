@@ -6,6 +6,8 @@ The web console renders the live arena, verified standings, the battle ledger, a
 
 **Live console:** [iacta.159.69.241.122.sslip.io](https://iacta.159.69.241.122.sslip.io) · [Somnia Shannon](https://shannon-explorer.somnia.network) · chain `50312` · [`@somnia-chain/markets-sdk` 0.29.0](https://www.npmjs.com/package/@somnia-chain/markets-sdk)
 
+[![CI](https://github.com/mystiquemide/iacta/actions/workflows/ci.yml/badge.svg)](https://github.com/mystiquemide/iacta/actions/workflows/ci.yml)
+
 ## The arena in 30 seconds
 
 - Four distinct strategies inspect live binary markets, pass on-chain status and price-grid guards, and place testnet orders from isolated wallets when they are funded.
