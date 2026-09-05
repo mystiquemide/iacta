@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { ClaimablePosition } from "@somnia-chain/markets-sdk";
-import { encodeAbiParameters, encodeEventTopics, parseAbi, type Hex } from "viem";
+import { encodeAbiParameters, encodeEventTopics, numberToHex, parseAbi, type Hex } from "viem";
 import {
   decodeRedemptionReceipt,
   executeRedemptionPlan,
@@ -11,8 +11,8 @@ import {
   sweepAgent,
 } from "./redemption.js";
 
-const marketA = `0x${"a".repeat(64)}`;
-const marketB = `0x${"b".repeat(64)}`;
+const marketA = `0x${"a".repeat(64)}` as Hex;
+const marketB = `0x${"b".repeat(64)}` as Hex;
 const account = `0x${"1".repeat(40)}`;
 const settlement = `0x${"3".repeat(40)}`;
 const redemptionAbi = parseAbi([
@@ -90,10 +90,25 @@ test("redemption decoder extracts only settlement payouts for the swept account"
   ], settlement, account);
 
   assert.deepEqual(events, [{
-    marketId: marketA,
+    marketKey: marketA,
     outcomeIdx: 0,
     amountBurned: 1_000n,
     collateralOut: 890n,
+  }]);
+});
+
+test("redemption decoder preserves the v2 packed settlement market key", () => {
+  const pool = `0x${"2".repeat(40)}`;
+  const packedKey = numberToHex((BigInt(pool) << 64n) | 9n, { size: 32 });
+  const events = decodeRedemptionReceipt([
+    redeemedLog(packedKey, 1, 1_000n, 1_000n),
+  ], settlement, account);
+
+  assert.deepEqual(events, [{
+    marketKey: packedKey,
+    outcomeIdx: 1,
+    amountBurned: 1_000n,
+    collateralOut: 1_000n,
   }]);
 });
 
@@ -121,14 +136,18 @@ test("redemption receipt verifier matches every planned entry and sums actual pa
   assert.ok(plan);
 
   const summary = summarizeRedemptionReceipt(plan, [
-    { marketId: marketB, outcomeIdx: 1, amountBurned: 200n, collateralOut: 170n },
-    { marketId: marketA, outcomeIdx: 0, amountBurned: 1_000n, collateralOut: 890n },
+    { marketKey: marketB, outcomeIdx: 1, amountBurned: 200n, collateralOut: 170n },
+    { marketKey: marketA, outcomeIdx: 0, amountBurned: 1_000n, collateralOut: 890n },
   ]);
 
   assert.deepEqual(summary, {
     proceeds: 1_060n,
     marketIds: [marketA, marketB],
     outcomes: ["YES", "NO"],
+    payouts: [
+      { marketId: marketA, outcome: "YES", amountBurned: 1_000n, proceeds: 890n },
+      { marketId: marketB, outcome: "NO", amountBurned: 200n, proceeds: 170n },
+    ],
   });
 });
 
@@ -142,7 +161,7 @@ test("redemption receipt verifier rejects missing or mismatched events", () => {
   );
   assert.throws(
     () => summarizeRedemptionReceipt(plan, [{
-      marketId: marketA,
+      marketKey: marketA,
       outcomeIdx: 0,
       amountBurned: 999n,
       collateralOut: 890n,
@@ -159,12 +178,12 @@ test("receipt recovery selects only a successful candidate matching the redempti
     {
       hash: "0xwrong",
       receipt: { status: "success" },
-      events: [{ marketId: marketA, outcomeIdx: 0, amountBurned: 999n, collateralOut: 890n }],
+      events: [{ marketKey: marketA, outcomeIdx: 0, amountBurned: 999n, collateralOut: 890n }],
     },
     {
       hash: "0xright",
       receipt: { status: "success" },
-      events: [{ marketId: marketA, outcomeIdx: 0, amountBurned: 1_000n, collateralOut: 890n }],
+      events: [{ marketKey: marketA, outcomeIdx: 0, amountBurned: 1_000n, collateralOut: 890n }],
     },
   ]);
 
@@ -205,7 +224,7 @@ test("redemption execution records verified collateral out from the receipt", as
       return { hash: "0xredeem", receipt: { status: "success" } };
     },
     verifyReceipt: () => [{
-      marketId: marketA,
+      marketKey: marketA,
       outcomeIdx: 0 as const,
       amountBurned: 1_000n,
       collateralOut: 890n,
@@ -244,7 +263,7 @@ test("redemption execution recovers a matching receipt after an ambiguous writer
       return { hash: "0xrecovered", receipt: { status: "success" } };
     },
     verifyReceipt: () => [{
-      marketId: marketA,
+      marketKey: marketA,
       outcomeIdx: 0 as const,
       amountBurned: 1_000n,
       collateralOut: 890n,
@@ -292,6 +311,96 @@ test("redemption sweep reads claimable positions before deciding whether to writ
     estimatedProceeds: 0n,
   });
   assert.equal(writeCalls, 0);
+});
+
+test("redemption sweep resolves market keys for v2 receipt matching and strips them from the SDK write", async () => {
+  const packedKey = `0x${"c".repeat(64)}` as Hex;
+  let writtenEntries: unknown;
+  let recordedMarket = "";
+
+  const result = await sweepAgent("SECUTOR", account, {
+    getClaimable: async () => [position(marketA, 0, 1_000n, 900n)],
+    getMarketKey: async () => packedKey,
+  }, {
+    dryRun: false,
+    redeemMany: async (entries) => {
+      writtenEntries = entries;
+      return { hash: "0xv2redeem", receipt: { status: "success" } };
+    },
+    verifyReceipt: () => [{
+      marketKey: packedKey,
+      outcomeIdx: 0 as const,
+      amountBurned: 1_000n,
+      collateralOut: 890n,
+    }],
+    recordRedemption: (redemption) => {
+      recordedMarket = redemption.marketId;
+    },
+  });
+
+  assert.deepEqual(writtenEntries, [{ marketId: marketA, outcomeIdx: 0, amount: 1_000n }]);
+  assert.equal(recordedMarket, marketA);
+  assert.deepEqual(result, {
+    agentId: "SECUTOR",
+    account,
+    claimablePositions: 1,
+    status: "REDEEMED",
+    estimatedProceeds: 900n,
+    proceeds: 890n,
+    txHash: "0xv2redeem",
+  });
+});
+
+test("redemption execution records one ledger row per redeemed market", async () => {
+  const plan = planRedemption("SECUTOR", account, [
+    position(marketA, 0, 1_000n, 900n),
+    position(marketB, 1, 500n, 450n),
+  ]);
+  assert.ok(plan);
+  const recorded: { marketId: string; proceeds: string }[] = [];
+
+  await executeRedemptionPlan(plan, {
+    dryRun: false,
+    redeemMany: async (entries) => {
+      assert.deepEqual(entries, [
+        { marketId: marketA, outcomeIdx: 0, amount: 1_000n },
+        { marketId: marketB, outcomeIdx: 1, amount: 500n },
+      ]);
+      return { hash: "0xbatch-redeem", receipt: { status: "success" } };
+    },
+    verifyReceipt: () => [
+      { marketKey: marketA, outcomeIdx: 0 as const, amountBurned: 1_000n, collateralOut: 900n },
+      { marketKey: marketB, outcomeIdx: 1 as const, amountBurned: 500n, collateralOut: 450n },
+    ],
+    recordRedemption: (redemption) => recorded.push({
+      marketId: redemption.marketId,
+      proceeds: redemption.proceeds,
+    }),
+  });
+
+  assert.deepEqual(recorded, [
+    { marketId: marketA, proceeds: "900" },
+    { marketId: marketB, proceeds: "450" },
+  ]);
+});
+
+test("redemption sweep times out a stalled market-key resolution", async () => {
+  await assert.rejects(
+    () => Promise.race([
+      sweepAgent("SECUTOR", account, {
+        getClaimable: async () => [position(marketA, 0, 1_000n, 900n)],
+        getMarketKey: async () => new Promise<Hex>(() => undefined),
+      }, {
+        dryRun: true,
+        readTimeoutMs: 5,
+        redeemMany: async () => ({ hash: "0xunexpected", receipt: { status: "success" } }),
+        verifyReceipt: () => [],
+        recordRedemption: () => undefined,
+      }),
+      new Promise<never>((_resolve, reject) => setTimeout(() => reject(new Error("test harness timeout")), 30)),
+    ]),
+    /market key resolution timed out after 5ms/,
+  );
 });
 
 test("redemption sweep times out a stalled claimable read", async () => {

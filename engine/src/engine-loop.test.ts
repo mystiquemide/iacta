@@ -93,5 +93,6 @@ test("slow trade history degrades to an explicit empty history result", async ()
 
 test("known venue rejections do not pause a wallet, while transport outcomes do", () => {
   assert.equal(isAmbiguousOrderError(new Error("placeBinaryOrder reverted: SelfMatchCancelTaker()")), false);
+  assert.equal(isAmbiguousOrderError(new Error("transaction 0xabc123 reverted (no revert data recoverable)")), false);
   assert.equal(isAmbiguousOrderError(new Error("order write timed out after 60000ms")), true);
 });

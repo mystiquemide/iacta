@@ -10,11 +10,15 @@ import {
   addressFor,
   exchangeFor,
   loadLocalEnv,
+  maxFeePerGas,
   privateKeyFor,
+  writeGasLimit,
   type WalletRole,
 } from "./config.js";
 import { writeHeartbeat } from "./heartbeat.js";
+import { reconcileAgentActivity } from "./reconciliation.js";
 import { sweepRole } from "./redemption-runner.js";
+import { collateralRequired, chooseVenue } from "./trading-helpers.js";
 import {
   BATTLE_AGENT_IDS,
   decide,
@@ -35,6 +39,8 @@ const DEFAULT_REDEMPTION_INTERVAL_MS = 300_000;
 const DEFAULT_REDEMPTION_READ_TIMEOUT_MS = 15_000;
 const DEFAULT_LOOP_READ_TIMEOUT_MS = 10_000;
 const DEFAULT_LOOP_WRITE_TIMEOUT_MS = 60_000;
+const DEFAULT_RECONCILIATION_LOOKBACK_SECONDS = 3_600;
+const DEFAULT_RECONCILIATION_LIMIT = 200;
 const NANOSECONDS_PER_SECOND = 1_000_000_000n;
 
 const binaryPoolEventsAbi = parseAbi([
@@ -42,6 +48,7 @@ const binaryPoolEventsAbi = parseAbi([
 ]);
 
 export type LoopRole = BattleAgentId | "FRESH";
+export { collateralRequired, chooseVenue } from "./trading-helpers.js";
 
 export interface LoopTradeActivity {
   kind: "TRADE" | "STATUS";
@@ -165,16 +172,6 @@ export function planRoleDecisions(
   });
 }
 
-export function collateralRequired(
-  side: "BUY_YES" | "BUY_NO",
-  quoteOne: bigint,
-  price: bigint,
-  quantity: bigint,
-): bigint {
-  const outcomePrice = side === "BUY_NO" ? quoteOne - price : price;
-  return (outcomePrice * quantity + quoteOne - 1n) / quoteOne;
-}
-
 export function orderTypeFor(intent: OrderIntent): number {
   return intent.orderType === "IOC" ? ORDER_TYPE.MARKET : ORDER_TYPE.POST_ONLY;
 }
@@ -197,15 +194,6 @@ export function fillPathFromReceipt(
     }
   }
   return "unknown";
-}
-
-export function chooseVenue(markets: readonly BinaryMarket[], preferred?: string): string | undefined {
-  if (preferred) return preferred;
-  const counts = new Map<string, number>();
-  for (const market of markets) {
-    if (market.venueId) counts.set(market.venueId, (counts.get(market.venueId) ?? 0) + 1);
-  }
-  return [...counts.entries()].sort((left, right) => right[1] - left[1])[0]?.[0];
 }
 
 interface ActiveOrder {
@@ -241,6 +229,9 @@ interface LoopRuntime {
   writeTimeoutMs: number;
   redemptionsEnabled: boolean;
   lastRedemptionSweepAt: number;
+  reconciliationLookbackSeconds: number;
+  reconciliationLimit: number;
+  startupWarnings: string[];
 }
 
 function message(error: unknown): string {
@@ -248,7 +239,7 @@ function message(error: unknown): string {
 }
 
 export function isAmbiguousOrderError(error: unknown): boolean {
-  return !/(placeBinaryOrder reverted|transaction reverted)/i.test(message(error));
+  return !/(placeBinaryOrder reverted|transaction(?:\s+[^\s]+)?\s+reverted)/i.test(message(error));
 }
 
 function jsonSafe(value: unknown): string {
@@ -439,6 +430,7 @@ function recordOrderResult(
         side: maker.side,
         price: fill.fillPrice.toString(),
         quantity: fill.quantityFilled.toString(),
+        makerOrderId: fill.makerOrderId.toString(),
         txHash: result.hash,
         fillPath,
         occurredAt,
@@ -451,6 +443,7 @@ function recordOrderResult(
       side: intent.side,
       price: fill.fillPrice.toString(),
       quantity: fill.quantityFilled.toString(),
+      makerOrderId: fill.makerOrderId.toString(),
       txHash: result.hash,
       fillPath,
       occurredAt,
@@ -505,6 +498,17 @@ async function executeIntent(
   }
 
   try {
+    const nativeBalance = await withTimeout(
+      agent.exchange.client.getViemClient().getBalance({ address: agent.address }),
+      runtime.readTimeoutMs,
+      "native balance read",
+    );
+    const gasEnvelope = writeGasLimit() * maxFeePerGas();
+    if (nativeBalance < gasEnvelope) {
+      const reason = `native balance ${nativeBalance} is below write envelope ${gasEnvelope}`;
+      recordRefusal(runtime, agent.role, market.marketId, reason);
+      return { role: agent.role, side: intent.side, status: "REFUSED", reason };
+    }
     const required = collateralRequired(intent.side, snapshot.quoteOne, intent.price, intent.quantity);
     const collateral = await withTimeout(
       agent.exchange.client.getErc20Balance(market.collateral, agent.address),
@@ -524,6 +528,7 @@ async function executeIntent(
       orderType: orderTypeFor(intent),
       expireTimestampNs: intent.expireTimestampNs,
       autoApprove: true,
+      gas: writeGasLimit(),
     }), runtime.writeTimeoutMs, "order write");
     if (result.receipt.status !== "success") {
       throw new Error(`transaction reverted: ${result.hash}`);
@@ -571,7 +576,56 @@ async function sweepRedemptions(runtime: LoopRuntime): Promise<LoopCycleReport["
   }));
 }
 
+async function reconcileStartup(runtime: LoopRuntime): Promise<void> {
+  if (runtime.dryRun) return;
+
+  let sinceSeconds: number;
+  try {
+    const block = await withTimeout(
+      runtime.reader.client.getViemClient().getBlock({ blockTag: "latest" }),
+      runtime.readTimeoutMs,
+      "startup reconciliation chain head read",
+    );
+    sinceSeconds = Math.max(0, Number(block.timestamp) - runtime.reconciliationLookbackSeconds);
+  } catch (error) {
+    for (const agent of runtime.agents) runtime.pausedRoles.add(agent.role);
+    runtime.startupWarnings.push(`startup reconciliation unavailable; all roles paused: ${message(error).slice(0, 180)}`);
+    return;
+  }
+
+  for (const agent of runtime.agents) {
+    if (!agent.address) continue;
+    try {
+      await reconcileAgentActivity(agent.role, agent.address, {
+        getOrders: (account, options) => withTimeout(
+          runtime.reader.client.getOrders(account, { limit: options.limit }),
+          runtime.readTimeoutMs,
+          "startup order reconciliation read",
+        ),
+        getUserFills: (account, options) => withTimeout(
+          runtime.reader.client.getUserFills(account, { since: options.since, limit: options.limit }),
+          runtime.readTimeoutMs,
+          "startup fill reconciliation read",
+        ),
+      }, runtime.store, {
+        sinceSeconds,
+        limit: runtime.reconciliationLimit,
+      });
+    } catch (error) {
+      runtime.pausedRoles.add(agent.role);
+      runtime.startupWarnings.push(`${agent.role} startup reconciliation failed; role paused until restart: ${message(error).slice(0, 180)}`);
+    }
+  }
+}
+
+function takeStartupWarnings(runtime: LoopRuntime): string[] {
+  const warnings = [...runtime.startupWarnings];
+  runtime.startupWarnings.length = 0;
+  return warnings;
+}
+
 async function runCycle(runtime: LoopRuntime): Promise<LoopCycleReport> {
+  const startupWarnings = takeStartupWarnings(runtime);
   const redemptions = await sweepRedemptions(runtime);
   const selected = await discoverMarket(
     runtime.reader,
@@ -589,7 +643,7 @@ async function runCycle(runtime: LoopRuntime): Promise<LoopCycleReport> {
       decisions: [],
       placements: [],
       redemptions,
-      warnings: [],
+      warnings: startupWarnings,
     };
   }
   const marketRead = await readMarketSnapshot(
@@ -625,7 +679,7 @@ async function runCycle(runtime: LoopRuntime): Promise<LoopCycleReport> {
     decisions,
     placements,
     redemptions,
-    warnings: marketRead.warnings,
+    warnings: [...startupWarnings, ...marketRead.warnings],
   };
 }
 
@@ -669,6 +723,9 @@ async function main(): Promise<void> {
     writeTimeoutMs: parsePositiveNumber(process.env.IACTA_LOOP_WRITE_TIMEOUT_MS, DEFAULT_LOOP_WRITE_TIMEOUT_MS, 300_000),
     redemptionsEnabled: !process.argv.includes("--skip-redemptions"),
     lastRedemptionSweepAt: 0,
+    reconciliationLookbackSeconds: parsePositiveNumber(process.env.IACTA_RECONCILIATION_LOOKBACK_SECONDS, DEFAULT_RECONCILIATION_LOOKBACK_SECONDS, 86_400),
+    reconciliationLimit: parsePositiveNumber(process.env.IACTA_RECONCILIATION_LIMIT, DEFAULT_RECONCILIATION_LIMIT, 1_000),
+    startupWarnings: [],
   };
   const intervalMs = parsePositiveNumber(process.env.IACTA_LOOP_INTERVAL_MS, DEFAULT_LOOP_INTERVAL_MS, 300_000);
   let stopping = false;
@@ -677,6 +734,7 @@ async function main(): Promise<void> {
   process.once("SIGTERM", stop);
 
   try {
+    await reconcileStartup(runtime);
     do {
       try {
         const report = await runCycle(runtime);

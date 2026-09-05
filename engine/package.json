@@ -10,6 +10,7 @@
     "fund": "tsx src/fund-collateral.ts",
     "redeem-sweep": "tsx src/redeem-sweep.ts",
     "recompute-standings": "tsx src/recompute-standings.ts",
+    "negative-proof": "tsx src/negative-proof.ts",
     "killtest:a": "tsx src/killtest-a.ts",
     "crossing": "tsx src/crossing.ts",
     "loop": "tsx src/engine-loop.ts",

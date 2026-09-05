@@ -134,6 +134,13 @@ function midpoint(snapshot: MarketSnapshot): bigint {
   return snapped < lower ? lower : snapped > upper ? upper : snapped;
 }
 
+function nonCrossingQuotePrice(snapshot: MarketSnapshot, mid: bigint): bigint | null {
+  const max = ((snapshot.quoteOne - 1n) / 2n / snapshot.tickSize) * snapshot.tickSize;
+  if (max < snapshot.tickSize) return null;
+  const oneTickLower = mid > snapshot.tickSize ? mid - snapshot.tickSize : snapshot.tickSize;
+  return oneTickLower > max ? max : oneTickLower;
+}
+
 function range(values: readonly bigint[]): bigint {
   if (values.length === 0) return 0n;
   let lowest = values[0] ?? 0n;
@@ -231,7 +238,8 @@ function thraex(snapshot: MarketSnapshot): StrategyDecision {
 }
 
 function retiarius(snapshot: MarketSnapshot): StrategyDecision {
-  const price = midpoint(snapshot);
+  const price = nonCrossingQuotePrice(snapshot, midpoint(snapshot));
+  if (price === null) return decision("RETIARIUS", "no valid non-crossing quote grid", []);
   const expiry = orderExpiry(snapshot);
   return decision("RETIARIUS", "quoting both sides around the live midpoint", [
     acceptedIntent(snapshot, {

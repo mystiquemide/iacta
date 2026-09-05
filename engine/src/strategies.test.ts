@@ -118,7 +118,8 @@ test("Retiarius emits two opposing post-only quotes", () => {
 
   assert.equal(result.action, "ORDER");
   assert.deepEqual(result.intents.map((intent) => intent.side), ["BUY_YES", "BUY_NO"]);
-  assert.deepEqual(result.intents.map((intent) => intent.price), [500_000n, 500_000n]);
+  assert.deepEqual(result.intents.map((intent) => intent.price), [490_000n, 490_000n]);
+  assert.ok((result.intents[0]?.price ?? 0n) + (result.intents[1]?.price ?? 0n) < 1_000_000n);
   assert.ok(result.intents.every((intent) => intent.orderType === "POST_ONLY"));
 });
 

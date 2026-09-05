@@ -11,8 +11,10 @@ import {
   explorerTx,
   loadLocalEnv,
   privateKeyFor,
+  writeGasLimit,
 } from "./config.js";
 import { EventStore } from "./store.js";
+import { collateralRequired } from "./trading-helpers.js";
 
 const MIN_HEADROOM_SECONDS = 180;
 const ORDER_WINDOW_SECONDS = 120;
@@ -68,14 +70,6 @@ function hasMatchingMint(
   const recipients = new Set([yesTo.toLowerCase(), noTo.toLowerCase()]);
   if (amount !== quantity || !recipients.has(yesAddress.toLowerCase()) || !recipients.has(noAddress.toLowerCase())) return null;
   return { amount, payer, yesTo, noTo };
-}
-
-function orderPriceForSide(side: Side, one: bigint, price: bigint): bigint {
-  return side === "BUY_YES" ? price : one - price;
-}
-
-function collateralRequired(side: Side, one: bigint, price: bigint, quantity: bigint): bigint {
-  return (orderPriceForSide(side, one, price) * quantity + one - 1n) / one;
 }
 
 async function eligibleMarkets(exchange: ReturnType<typeof exchangeFor>): Promise<{ market: BinaryMarket; book: Awaited<ReturnType<ReturnType<typeof exchangeFor>["client"]["getBinaryOrderBook"]>>; params: Awaited<ReturnType<ReturnType<typeof exchangeFor>["client"]["getBinaryBookParams"]>>; now: number }[]> {
@@ -159,6 +153,7 @@ async function main(): Promise<void> {
       orderType: ORDER_TYPE.POST_ONLY,
       expireTimestampNs,
       autoApprove: true,
+      gas: writeGasLimit(),
     });
     const makerResult = maker as PlaceOrderResult;
     if (makerResult.receipt.status !== "success" || makerResult.fills.length > 0 || makerResult.orderId === undefined) {
@@ -174,13 +169,14 @@ async function main(): Promise<void> {
       orderType: ORDER_TYPE.MARKET,
       expireTimestampNs,
       autoApprove: true,
+      gas: writeGasLimit(),
     });
     const takerResult = taker as PlaceOrderResult;
     const events = decodePoolEvents(takerResult.receipt, pool);
     const fill = takerResult.fills.find((item) => item.makerOrderId === makerOrderId);
     const mint = hasMatchingMint(events, quantity, freshAddress, secutorAddress);
     if (takerResult.receipt.status !== "success" || !fill || !mint) {
-      await exchange.trader.cancelOrder({ pool, orderId: makerOrderId });
+      await exchange.trader.cancelOrder({ pool, orderId: makerOrderId, gas: writeGasLimit() });
       throw new Error(`Opposing order did not produce a verified mint-a-pair crossing in ${takerResult.hash}`);
     }
 
@@ -226,6 +222,7 @@ async function main(): Promise<void> {
       side: "BUY_YES",
       price: fill.fillPrice.toString(),
       quantity: fill.quantityFilled.toString(),
+      makerOrderId: fill.makerOrderId.toString(),
       txHash: takerResult.hash,
       fillPath: "mint",
     }, { source: "SetMinted", mint, order: fill });
@@ -236,6 +233,7 @@ async function main(): Promise<void> {
       side: "BUY_NO",
       price: fill.fillPrice.toString(),
       quantity: fill.quantityFilled.toString(),
+      makerOrderId: fill.makerOrderId.toString(),
       txHash: takerResult.hash,
       fillPath: "mint",
     }, { source: "SetMinted", mint, order: fill });

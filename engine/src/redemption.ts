@@ -16,6 +16,8 @@ export interface RedemptionEntry {
   marketId: Hex;
   outcomeIdx: 0 | 1;
   amount: bigint;
+  /** Settlement's packed pool + nonce key, resolved from the live market when available. */
+  marketKey?: Hex;
 }
 
 export interface RedemptionPlan {
@@ -27,7 +29,7 @@ export interface RedemptionPlan {
 }
 
 export interface RedemptionReceiptEvent {
-  marketId: string;
+  marketKey: Hex;
   outcomeIdx: 0 | 1;
   amountBurned: bigint;
   collateralOut: bigint;
@@ -54,7 +56,7 @@ export function decodeRedemptionReceipt(
       const outcomeIdx = Number(decoded.args.outcomeIdx);
       if (outcomeIdx !== 0 && outcomeIdx !== 1) throw new Error("redemption outcome index is invalid");
       events.push({
-        marketId: numberToHex(decoded.args.marketKey as bigint, { size: 32 }),
+        marketKey: numberToHex(decoded.args.marketKey as bigint, { size: 32 }),
         outcomeIdx,
         amountBurned: decoded.args.amountBurned as bigint,
         collateralOut: decoded.args.collateralOut as bigint,
@@ -71,6 +73,12 @@ export interface RedemptionReceiptSummary {
   proceeds: bigint;
   marketIds: string[];
   outcomes: ("YES" | "NO")[];
+  payouts: {
+    marketId: Hex;
+    outcome: "YES" | "NO";
+    amountBurned: bigint;
+    proceeds: bigint;
+  }[];
 }
 
 export interface RedemptionTxResult {
@@ -93,6 +101,16 @@ export interface RedemptionExecutionDependencies {
 
 export interface RedemptionReader {
   getClaimable: (account: string) => Promise<readonly ClaimablePosition[]>;
+  /** Resolve a bytes32 market ID to the packed settlement market key. */
+  getMarketKey?: (marketId: string) => Promise<Hex>;
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number | undefined, operation: string): Promise<T> {
+  if (timeoutMs === undefined || timeoutMs <= 0) return promise;
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${operation} timed out after ${timeoutMs}ms`)), timeoutMs);
+    promise.then(resolve, reject).finally(() => clearTimeout(timer));
+  });
 }
 
 export type RedemptionExecutionResult =
@@ -174,33 +192,48 @@ export function summarizeRedemptionReceipt(
     throw new Error(`redemption event count ${events.length} does not match planned entry count ${plan.entries.length}`);
   }
 
-  const actual = new Map<string, RedemptionReceiptEvent>();
   for (const event of events) {
-    assertMarketId(event.marketId);
+    assertMarketId(event.marketKey);
     assertNonNegative(event.amountBurned, "amount burned");
     assertNonNegative(event.collateralOut, "collateral payout");
-    const marketId = event.marketId.toLowerCase();
-    const key = `${marketId}:${event.outcomeIdx}`;
-    if (actual.has(key)) throw new Error(`duplicate redemption event for ${key}`);
-    actual.set(key, { ...event, marketId });
   }
 
+  const used = new Set<number>();
   const ordered = plan.entries.map((entry) => {
-    const key = `${entry.marketId.toLowerCase()}:${entry.outcomeIdx}`;
-    const event = actual.get(key);
-    if (!event) throw new Error(`missing redemption event for ${key}`);
+    const expectedKey = (entry.marketKey ?? entry.marketId).toLowerCase();
+    const matching = events
+      .map((event, index) => ({ event, index }))
+      .filter(({ event, index }) => (
+        !used.has(index)
+        && event.marketKey.toLowerCase() === expectedKey
+        && event.outcomeIdx === entry.outcomeIdx
+      ));
+    const match = matching[0];
+    if (!match) throw new Error(`missing redemption event for ${entry.marketId}:${entry.outcomeIdx}`);
+    if (matching.length > 1) throw new Error(`duplicate redemption event for ${entry.marketId}:${entry.outcomeIdx}`);
+    used.add(match.index);
+    const event = match.event;
     if (event.amountBurned !== entry.amount) {
-      throw new Error(`redemption amount burned does not match plan for ${key}`);
+      throw new Error(`redemption amount burned does not match plan for ${entry.marketId}:${entry.outcomeIdx}`);
     }
-    actual.delete(key);
     return event;
   });
-  if (actual.size > 0) throw new Error("redemption receipt contains an unexpected event");
+  if (used.size !== events.length) throw new Error("redemption receipt contains an unexpected event");
 
   return {
     proceeds: ordered.reduce((total, event) => total + event.collateralOut, 0n),
-    marketIds: ordered.map((event) => event.marketId),
+    marketIds: plan.entries.map((entry) => entry.marketId),
     outcomes: ordered.map((event) => event.outcomeIdx === 0 ? "YES" : "NO"),
+    payouts: ordered.map((event, index) => {
+      const entry = plan.entries[index];
+      if (!entry) throw new Error("redemption payout is missing its planned entry");
+      return {
+        marketId: entry.marketId,
+        outcome: event.outcomeIdx === 0 ? "YES" : "NO",
+        amountBurned: event.amountBurned,
+        proceeds: event.collateralOut,
+      };
+    }),
   };
 }
 
@@ -232,7 +265,11 @@ export async function executeRedemptionPlan(
 
   let transaction: RedemptionTxResult;
   try {
-    transaction = await dependencies.redeemMany(plan.entries);
+    transaction = await dependencies.redeemMany(plan.entries.map(({ marketId, outcomeIdx, amount }) => ({
+      marketId,
+      outcomeIdx,
+      amount,
+    })));
   } catch (error) {
     const recovered = dependencies.recoverRedemption
       ? await dependencies.recoverRedemption(error, plan)
@@ -247,15 +284,15 @@ export async function executeRedemptionPlan(
   }
   const events = dependencies.verifyReceipt(transaction.receipt);
   const summary = summarizeRedemptionReceipt(plan, events);
-  const firstMarketId = summary.marketIds[0];
-  if (!firstMarketId) throw new Error("verified redemption has no market id");
-  dependencies.recordRedemption({
-    marketId: firstMarketId,
-    agentId: plan.agentId,
-    proceeds: summary.proceeds.toString(),
-    outcome: summary.outcomes.join("+"),
-    txHash: transaction.hash,
-  }, { plan, summary, events });
+  for (const payout of summary.payouts) {
+    dependencies.recordRedemption({
+      marketId: payout.marketId,
+      agentId: plan.agentId,
+      proceeds: payout.proceeds.toString(),
+      outcome: payout.outcome,
+      txHash: transaction.hash,
+    }, { plan, summary, events, payout });
+  }
 
   return {
     status: "REDEEMED",
@@ -273,15 +310,17 @@ export async function sweepAgent(
 ): Promise<RedemptionSweepResult> {
   const read = reader.getClaimable(account);
   const timeoutMs = dependencies.readTimeoutMs;
-  const positions = timeoutMs === undefined || timeoutMs <= 0
-    ? await read
-    : await new Promise<readonly ClaimablePosition[]>((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error(`claimable read timed out after ${timeoutMs}ms`)), timeoutMs);
-      read.then(resolve, reject).finally(() => clearTimeout(timer));
-    });
-  const execution = await executeRedemptionPlan(
-    planRedemption(agentId, account, positions),
-    dependencies,
-  );
+  const positions = await withTimeout(read, timeoutMs, "claimable read");
+  const unkeyedPlan = planRedemption(agentId, account, positions);
+  const plan = unkeyedPlan && reader.getMarketKey
+    ? {
+      ...unkeyedPlan,
+      entries: await Promise.all(unkeyedPlan.entries.map(async (entry) => ({
+        ...entry,
+        marketKey: await withTimeout(reader.getMarketKey!(entry.marketId), timeoutMs, "market key resolution"),
+      }))),
+    }
+    : unkeyedPlan;
+  const execution = await executeRedemptionPlan(plan, dependencies);
   return { agentId, account, claimablePositions: positions.length, ...execution };
 }

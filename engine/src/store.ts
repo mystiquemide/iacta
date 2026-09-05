@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import { mkdirSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { dirname, isAbsolute, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 export type RoundStatus = "Listed" | "Trading" | "Locked" | "Settling" | "Resolved" | "Voided" | "Finalized";
 
@@ -25,6 +26,7 @@ export interface FillRecord {
   quantity: string;
   txHash: string;
   fillPath: "book" | "mint" | "unknown";
+  makerOrderId?: string;
   occurredAt?: string;
 }
 
@@ -69,10 +71,12 @@ export interface EventSnapshot {
 }
 
 const LEGACY_QUOTE_DECIMALS = 6;
+export const ENGINE_ROOT = fileURLToPath(new URL("../", import.meta.url));
 
-function defaultDatabasePath(): string {
-  const dataRoot = process.cwd().endsWith("/engine") ? process.cwd() : resolve(process.cwd(), "engine");
-  return resolve(dataRoot, "data", "iacta.db");
+export function resolveDatabasePath(configured?: string): string {
+  const value = configured?.trim() || process.env.IACTA_DB_PATH?.trim();
+  if (!value) return resolve(ENGINE_ROOT, "data", "iacta.db");
+  return isAbsolute(value) ? resolve(value) : resolve(ENGINE_ROOT, value);
 }
 
 function nowIso(): string {
@@ -87,8 +91,8 @@ export class EventStore {
   readonly path: string;
   private readonly db: Database.Database;
 
-  constructor(path = process.env.IACTA_DB_PATH ?? defaultDatabasePath()) {
-    this.path = resolve(path);
+  constructor(path?: string) {
+    this.path = resolveDatabasePath(path);
     mkdirSync(dirname(this.path), { recursive: true });
     this.db = new Database(this.path);
     this.db.pragma("journal_mode = WAL");
@@ -132,11 +136,12 @@ export class EventStore {
         side TEXT NOT NULL,
         price TEXT NOT NULL,
         quantity TEXT NOT NULL,
+        maker_order_id TEXT NOT NULL DEFAULT '',
         tx_hash TEXT NOT NULL,
         fill_path TEXT NOT NULL,
         occurred_at TEXT NOT NULL,
         raw_json TEXT NOT NULL,
-        UNIQUE (tx_hash, agent_id, price, quantity)
+        UNIQUE (tx_hash, agent_id, maker_order_id, price, quantity)
       );
 
       CREATE TABLE IF NOT EXISTS redemptions (
@@ -145,9 +150,10 @@ export class EventStore {
         agent_id TEXT NOT NULL,
         proceeds TEXT NOT NULL,
         outcome TEXT NOT NULL,
-        tx_hash TEXT NOT NULL UNIQUE,
+        tx_hash TEXT NOT NULL,
         occurred_at TEXT NOT NULL,
-        raw_json TEXT NOT NULL
+        raw_json TEXT NOT NULL,
+        UNIQUE (tx_hash, agent_id, market_id)
       );
 
       CREATE TABLE IF NOT EXISTS refusals (
@@ -166,6 +172,66 @@ export class EventStore {
       CREATE INDEX IF NOT EXISTS idx_redemptions_market ON redemptions (market_id, occurred_at);
       CREATE INDEX IF NOT EXISTS idx_refusals_market ON refusals (market_id, occurred_at);
     `);
+    const fillColumns = this.db.pragma("table_info(fills)") as { name: string }[];
+    if (!fillColumns.some((column) => column.name === "maker_order_id")) {
+      this.db.transaction(() => {
+        this.db.exec(`
+          CREATE TABLE fills_v2 (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            market_id TEXT NOT NULL,
+            agent_id TEXT NOT NULL,
+            pool_address TEXT NOT NULL,
+            side TEXT NOT NULL,
+            price TEXT NOT NULL,
+            quantity TEXT NOT NULL,
+            maker_order_id TEXT NOT NULL DEFAULT '',
+            tx_hash TEXT NOT NULL,
+            fill_path TEXT NOT NULL,
+            occurred_at TEXT NOT NULL,
+            raw_json TEXT NOT NULL,
+            UNIQUE (tx_hash, agent_id, maker_order_id, price, quantity)
+          );
+          INSERT INTO fills_v2
+            (id, market_id, agent_id, pool_address, side, price, quantity, maker_order_id, tx_hash, fill_path, occurred_at, raw_json)
+          SELECT id, market_id, agent_id, pool_address, side, price, quantity, '', tx_hash, fill_path, occurred_at, raw_json
+          FROM fills;
+          DROP TABLE fills;
+          ALTER TABLE fills_v2 RENAME TO fills;
+          CREATE INDEX IF NOT EXISTS idx_fills_market ON fills (market_id, occurred_at);
+        `);
+      })();
+    }
+    const redemptionIndexes = this.db.pragma("index_list(redemptions)") as { name: string; unique: number }[];
+    const hasMarketScopedRedemptionKey = redemptionIndexes.some((index) => {
+      if (index.unique !== 1) return false;
+      const indexName = index.name.replace(/'/g, "''");
+      const columns = this.db.pragma(`index_info('${indexName}')`) as { name: string }[];
+      return columns.map((column) => column.name).join(",") === "tx_hash,agent_id,market_id";
+    });
+    if (!hasMarketScopedRedemptionKey) {
+      this.db.transaction(() => {
+        this.db.exec(`
+          CREATE TABLE redemptions_v2 (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            market_id TEXT NOT NULL,
+            agent_id TEXT NOT NULL,
+            proceeds TEXT NOT NULL,
+            outcome TEXT NOT NULL,
+            tx_hash TEXT NOT NULL,
+            occurred_at TEXT NOT NULL,
+            raw_json TEXT NOT NULL,
+            UNIQUE (tx_hash, agent_id, market_id)
+          );
+          INSERT INTO redemptions_v2
+            (id, market_id, agent_id, proceeds, outcome, tx_hash, occurred_at, raw_json)
+          SELECT id, market_id, agent_id, proceeds, outcome, tx_hash, occurred_at, raw_json
+          FROM redemptions;
+          DROP TABLE redemptions;
+          ALTER TABLE redemptions_v2 RENAME TO redemptions;
+          CREATE INDEX IF NOT EXISTS idx_redemptions_market ON redemptions (market_id, occurred_at);
+        `);
+      })();
+    }
     const roundColumns = this.db.pragma("table_info(rounds)") as { name: string }[];
     if (!roundColumns.some((column) => column.name === "quote_decimals")) {
       this.db.exec(`ALTER TABLE rounds ADD COLUMN quote_decimals INTEGER NOT NULL DEFAULT ${LEGACY_QUOTE_DECIMALS}`);
@@ -202,11 +268,45 @@ export class EventStore {
   }
 
   recordFill(fill: FillRecord, raw: unknown = fill): void {
+    const occurredAt = fill.occurredAt ?? nowIso();
+    const rawJson = jsonOrEmpty(raw);
+    if (fill.makerOrderId) {
+      const legacy = this.db.prepare(`
+        SELECT id
+        FROM fills
+        WHERE tx_hash = @txHash
+          AND agent_id = @agentId
+          AND price = @price
+          AND quantity = @quantity
+          AND maker_order_id = ''
+        LIMIT 1
+      `).get(fill) as { id: number } | undefined;
+      if (legacy) {
+        const conflict = this.db.prepare(`
+          SELECT id
+          FROM fills
+          WHERE tx_hash = @txHash
+            AND agent_id = @agentId
+            AND price = @price
+            AND quantity = @quantity
+            AND maker_order_id = @makerOrderId
+          LIMIT 1
+        `).get(fill) as { id: number } | undefined;
+        if (!conflict) {
+          this.db.prepare(`
+            UPDATE fills
+            SET maker_order_id = @makerOrderId
+            WHERE id = @id
+          `).run({ id: legacy.id, makerOrderId: fill.makerOrderId });
+        }
+        return;
+      }
+    }
     this.db.prepare(`
       INSERT OR IGNORE INTO fills
-        (market_id, agent_id, pool_address, side, price, quantity, tx_hash, fill_path, occurred_at, raw_json)
-      VALUES (@marketId, @agentId, @poolAddress, @side, @price, @quantity, @txHash, @fillPath, @occurredAt, @rawJson)
-    `).run({ ...fill, occurredAt: fill.occurredAt ?? nowIso(), rawJson: jsonOrEmpty(raw) });
+        (market_id, agent_id, pool_address, side, price, quantity, maker_order_id, tx_hash, fill_path, occurred_at, raw_json)
+      VALUES (@marketId, @agentId, @poolAddress, @side, @price, @quantity, @makerOrderId, @txHash, @fillPath, @occurredAt, @rawJson)
+    `).run({ ...fill, makerOrderId: fill.makerOrderId ?? "", occurredAt, rawJson });
   }
 
   recordRedemption(redemption: RedemptionRecord, raw: unknown = redemption): void {
@@ -272,7 +372,7 @@ export class EventStore {
       occurred_at: string;
     }[];
     const fills = this.db.prepare(`
-      SELECT market_id, agent_id, pool_address, side, price, quantity, tx_hash, fill_path, occurred_at
+      SELECT market_id, agent_id, pool_address, side, price, quantity, maker_order_id, tx_hash, fill_path, occurred_at
       FROM fills
       ORDER BY occurred_at ASC, id ASC
     `).all() as {
@@ -282,6 +382,7 @@ export class EventStore {
       side: string;
       price: string;
       quantity: string;
+      maker_order_id: string;
       tx_hash: string;
       fill_path: FillRecord["fillPath"];
       occurred_at: string;
@@ -345,6 +446,7 @@ export class EventStore {
         quantity: row.quantity,
         txHash: row.tx_hash,
         fillPath: row.fill_path,
+        ...(row.maker_order_id ? { makerOrderId: row.maker_order_id } : {}),
         occurredAt: row.occurred_at,
       })),
       redemptions: redemptions.map((row) => ({

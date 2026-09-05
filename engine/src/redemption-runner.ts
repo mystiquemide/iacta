@@ -1,10 +1,13 @@
 import {
+  marketKey,
   SOMNIA_TESTNET_ADDRESSES,
   type TxResult,
 } from "@somnia-chain/markets-sdk";
+import { numberToHex, type Hex } from "viem";
 import {
   addressFor,
   exchangeFor,
+  writeGasLimit,
   type WalletRole,
 } from "./config.js";
 import {
@@ -88,13 +91,17 @@ export async function sweepRole(
   let broadcastBlock: bigint | undefined;
   return sweepAgent(role, account, {
     getClaimable: (requestedAccount) => exchange.client.getClaimable(requestedAccount),
+    getMarketKey: async (marketId) => {
+      const market = await exchange.client.getMarketOnchain(marketId as Hex);
+      return numberToHex(marketKey(market.yesId), { size: 32 });
+    },
   }, {
     dryRun: options.dryRun,
     readTimeoutMs: options.readTimeoutMs,
     redeemMany: async (entries) => {
       broadcastBlock = await exchange.client.getViemClient().getBlockNumber();
       return withTimeout(
-        exchange.trader.redeemMany({ entries: [...entries], autoApprove: true }),
+        exchange.trader.redeemMany({ entries: [...entries], autoApprove: true, gas: writeGasLimit() }),
         options.writeTimeoutMs,
       );
     },

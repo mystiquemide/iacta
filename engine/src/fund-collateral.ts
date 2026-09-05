@@ -8,6 +8,7 @@ import {
   exchangeFor,
   privateKeyFor,
   loadLocalEnv,
+  writeGasLimit,
   type WalletRole,
 } from "./config.js";
 
@@ -39,7 +40,7 @@ async function main(): Promise<boolean> {
           TESTNET_COLLATERAL,
           address,
         );
-        const result = await exchange.trader.faucet();
+        const result = await exchange.trader.faucet({ gas: writeGasLimit() });
         if (result.receipt.status !== "success") {
           throw new Error(`collateral faucet reverted in ${result.hash}`);
         }

@@ -11,6 +11,39 @@ export interface RecomputeReport {
   standings: StandingRow[];
 }
 
+export interface RecomputeOutput {
+  basis: string;
+  quoteOneByMarket: Record<string, string>;
+  source: RecomputeReport["source"] & {
+    explorerTransactions: string[];
+    receiptStatus: "success";
+  };
+  standings: (StandingRow & {
+    fillExplorers: string[];
+    redemptionExplorers: string[];
+  })[];
+}
+
+export function formatRecomputeOutput(
+  report: RecomputeReport,
+  explorer: (txHash: string) => string,
+): RecomputeOutput {
+  return {
+    basis: "Stored fill and redemption events with successful on-chain receipts",
+    quoteOneByMarket: report.quoteOneByMarket,
+    source: {
+      ...report.source,
+      explorerTransactions: report.source.transactionHashes.map(explorer),
+      receiptStatus: "success",
+    },
+    standings: report.standings.map((row) => ({
+      ...row,
+      fillExplorers: row.fillTxHashes.map(explorer),
+      redemptionExplorers: row.redemptionTxHashes.map(explorer),
+    })),
+  };
+}
+
 export interface ReceiptStatusReader {
   getReceipt: (txHash: string) => Promise<{ status?: string } | null>;
 }

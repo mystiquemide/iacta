@@ -10,8 +10,10 @@ import {
   explorerTx,
   privateKeyFor,
   loadLocalEnv,
+  writeGasLimit,
 } from "./config.js";
 import { EventStore } from "./store.js";
+import { chooseVenue } from "./trading-helpers.js";
 
 const MIN_HEADROOM_SECONDS = 180;
 const IOC_WINDOW_SECONDS = 120;
@@ -27,15 +29,6 @@ function selectedAsset(): string {
 function configuredVenue(): string | undefined {
   const venue = process.env.IACTA_VENUE_ID?.trim();
   return venue || undefined;
-}
-
-function chooseVenue(markets: BinaryMarket[], preferred?: string): string | undefined {
-  if (preferred) return preferred;
-  const counts = new Map<string, number>();
-  for (const market of markets) {
-    if (market.venueId) counts.set(market.venueId, (counts.get(market.venueId) ?? 0) + 1);
-  }
-  return [...counts.entries()].sort((left, right) => right[1] - left[1])[0]?.[0];
 }
 
 function chooseMarket(markets: BinaryMarket[], asset: string): BinaryMarket {
@@ -101,6 +94,7 @@ async function main(): Promise<void> {
       orderType: ORDER_TYPE.MARKET,
       expireTimestampNs,
       autoApprove: true,
+      gas: writeGasLimit(),
     });
     const result = placed as PlaceOrderResult;
     if (result.receipt.status !== "success") throw new Error(`IOC transaction reverted: ${result.hash}`);
@@ -137,6 +131,7 @@ async function main(): Promise<void> {
         side: selected.side,
         price: fill.fillPrice.toString(),
         quantity: fill.quantityFilled.toString(),
+        makerOrderId: fill.makerOrderId.toString(),
         txHash: result.hash,
         fillPath: "unknown",
       }, fill);

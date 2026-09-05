@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildRecomputeReport, verifyReceiptStatuses } from "./recompute-report.js";
+import { buildRecomputeReport, formatRecomputeOutput, verifyReceiptStatuses } from "./recompute-report.js";
 import type { FillRecord, RedemptionRecord } from "./store.js";
 
 const marketId = `0x${"a".repeat(64)}`;
@@ -89,4 +89,22 @@ test("receipt status gate checks each unique score transaction", async () => {
     }),
     /receipt is not successful/,
   );
+});
+
+test("recompute output contains receipt evidence without stale web-route claims", () => {
+  const report = buildRecomputeReport(
+    ["SECUTOR"],
+    [fill],
+    [redemption],
+    new Map([[marketId, 6]]),
+  );
+
+  const output = formatRecomputeOutput(report, (hash) => `https://explorer.test/tx/${hash}`);
+
+  assert.equal("uiComparison" in output, false);
+  assert.deepEqual(output.source.explorerTransactions, [
+    "https://explorer.test/tx/0xbuy",
+    "https://explorer.test/tx/0xredeem",
+  ]);
+  assert.equal(output.standings[0]?.agentId, "SECUTOR");
 });

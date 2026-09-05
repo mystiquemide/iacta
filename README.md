@@ -66,6 +66,7 @@ npm run engine:doctor
 npm run engine:test
 npm run engine:redeem-sweep -- --dry-run
 npm run engine:recompute-standings
+npm run engine:negative-proof
 ```
 
 The loop defaults to read-only dry-run mode:
@@ -83,6 +84,10 @@ IACTA_LOOP_ROLES=SECUTOR npm run engine:loop -- --once --live
 ```
 
 Use `IACTA_LOOP_ROLES=FRESH,SECUTOR` for the disclosed two-wallet fallback. The long-running loop keeps redemption sweeping enabled. `--skip-redemptions` is only for a bounded order-path smoke check.
+
+The engine uses a 3M gas ceiling and 9 gwei fee cap by default so a 0.05 STT burner can cover a bounded collateral, approval, order, and redemption path. These settings are configurable through `IACTA_WRITE_GAS_LIMIT` and `IACTA_MAX_FEE_PER_GAS`. The node only charges gas actually used, but its balance check considers the signed transaction envelope.
+
+`npm run engine:negative-proof` submits one deliberately expired order to a real finalized round, records the reverted receipt, and exits. It is a bounded testnet write for the locked-market refusal artifact.
 
 Public endpoints can be changed through `.env.example`. Burner keys belong only in the ignored `engine/.env.local` file. The event ledger is stored locally at `engine/data/iacta.db`.
 

@@ -3,6 +3,7 @@ import {
 } from "./strategies.js";
 import {
   buildRecomputeReport,
+  formatRecomputeOutput,
   verifyReceiptStatuses,
 } from "./recompute-report.js";
 import {
@@ -54,26 +55,7 @@ async function main(): Promise<void> {
       getReceipt: (txHash) => exchange.client.getViemClient().getTransactionReceipt({ hash: txHash as Hex }),
     });
 
-    console.log(jsonSafe({
-      basis: "Stored fill and redemption events with successful on-chain receipts",
-      quoteOneByMarket: report.quoteOneByMarket,
-      source: {
-        ...report.source,
-        explorerTransactions: report.source.transactionHashes.map(explorerTx),
-        receiptStatus: "success",
-      },
-      uiComparison: {
-        status: "ROUTE_WIRED",
-        route: "/standings",
-        displayedStandings: null,
-        reason: "The public /standings route is wired to the receipt-backed arena read model. Fetch that route separately for a rendered-page comparison.",
-      },
-      standings: report.standings.map((row) => ({
-        ...row,
-        fillExplorers: row.fillTxHashes.map(explorerTx),
-        redemptionExplorers: row.redemptionTxHashes.map(explorerTx),
-      })),
-    }));
+    console.log(jsonSafe(formatRecomputeOutput(report, explorerTx)));
   } finally {
     exchange.client.stopLive();
     store.close();
