@@ -8,6 +8,7 @@
     "wallets": "tsx src/generate-wallets.ts",
     "fresh-wallet": "tsx src/generate-fresh-wallet.ts",
     "fund": "tsx src/fund-collateral.ts",
+    "redeem-sweep": "tsx src/redeem-sweep.ts",
     "killtest:a": "tsx src/killtest-a.ts",
     "crossing": "tsx src/crossing.ts",
     "test": "node --import tsx --test src/*.test.ts",
