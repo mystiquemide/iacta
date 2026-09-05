@@ -486,6 +486,80 @@ h1 {
   line-height: 1.5;
 }
 
+.external-panel {
+  background: var(--arena-panel);
+  border: 1px solid var(--arena-line);
+  padding: 20px;
+}
+
+.external-note {
+  color: var(--arena-muted);
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  line-height: 1.5;
+  margin: 0 0 16px;
+  max-width: 680px;
+  text-transform: uppercase;
+}
+
+.external-list {
+  border-top: 1px solid var(--arena-line);
+}
+
+.external-row {
+  align-items: center;
+  border-bottom: 1px solid var(--arena-line);
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  min-height: 62px;
+}
+
+.external-row:last-child {
+  border-bottom: 0;
+}
+
+.external-row strong,
+.external-row span,
+.external-links {
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.external-row strong,
+.external-row span {
+  display: block;
+}
+
+.external-row strong {
+  color: var(--arena-bone);
+  font-weight: 400;
+  margin-bottom: 7px;
+}
+
+.external-row span,
+.external-links a {
+  color: var(--arena-muted);
+}
+
+.external-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.external-links a {
+  text-decoration: none;
+}
+
+.external-links a:hover,
+.external-links a:focus-visible {
+  color: var(--arena-bone);
+}
+
 .data-warning {
   border: 1px solid var(--arena-red);
   color: var(--arena-red);
@@ -976,6 +1050,17 @@ h1 {
 
   .profile-event-row a {
     text-align: left;
+  }
+
+  .external-row {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 0;
+  }
+
+  .external-links {
+    justify-content: flex-start;
   }
 
   .standing-score {

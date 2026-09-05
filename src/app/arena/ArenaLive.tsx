@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { ArenaState, KillfeedEvent } from "@/lib/arena-server";
+import ExternalParticipants from "./ExternalParticipants";
 
 const BATTLE_AGENTS = ["RETIARIUS", "SECUTOR", "THRAEX", "MURMILLO"];
 
@@ -179,6 +180,8 @@ export default function ArenaLive({ initialState }: { initialState: ArenaState }
           Data warning: {state.dataWarnings.join(" ")}
         </aside>
       ) : null}
+
+      <ExternalParticipants />
 
       <footer className="site-footer">
         <span>IACTA / ARENA ENGINE</span>
