@@ -46,67 +46,113 @@ export default async function BattlesPage() {
       </div>
 
       {rows.length > 0 ? (
-        <Panel className="overflow-x-auto">
-          <table className="w-full min-w-[860px] text-left text-[0.8125rem]">
-            <thead>
-              <tr className="border-b border-line">
-                <th className="kicker px-4 py-2.5 font-medium">Market</th>
-                <th className="kicker px-4 py-2.5 font-medium">Window</th>
-                <th className="kicker px-4 py-2.5 font-medium">Participants</th>
-                <th className="kicker px-4 py-2.5 font-medium">Settlement</th>
-                <th className="kicker px-4 py-2.5 text-right font-medium">Fills</th>
-                <th className="kicker px-4 py-2.5 text-right font-medium">Volume</th>
-                <th className="kicker px-4 py-2.5 text-right font-medium">Proof</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.marketId} className="border-b border-line/60 last:border-b-0">
-                  <td className="px-4 py-3">
+        <>
+          <Panel className="hidden overflow-x-auto md:block">
+            <table className="w-full min-w-[860px] text-left text-[0.8125rem]">
+              <thead>
+                <tr className="border-b border-line">
+                  <th className="kicker px-4 py-2.5 font-medium">Market</th>
+                  <th className="kicker px-4 py-2.5 font-medium">Window</th>
+                  <th className="kicker px-4 py-2.5 font-medium">Participants</th>
+                  <th className="kicker px-4 py-2.5 font-medium">Settlement</th>
+                  <th className="kicker px-4 py-2.5 text-right font-medium">Fills</th>
+                  <th className="kicker px-4 py-2.5 text-right font-medium">Volume</th>
+                  <th className="kicker px-4 py-2.5 text-right font-medium">Proof</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.marketId} className="border-b border-line/60 last:border-b-0">
+                    <td className="px-4 py-3">
+                      <span className="font-medium text-ink">{row.asset}</span>
+                      <span className="mono ml-2 text-[0.75rem] text-ink-3">
+                        {shortMarketId(row.marketId)}
+                      </span>
+                      {row.isLive ? (
+                        <span className="ml-2 text-[0.6875rem] font-medium text-live-ink">
+                          TRADING
+                        </span>
+                      ) : null}
+                    </td>
+                    <td className="mono px-4 py-3 text-[0.75rem] text-ink-2">
+                      {formatWindow(row.tradingStart, row.expiry)}
+                    </td>
+                    <td className="px-4 py-3 text-ink-2">
+                      {row.participants.length > 0
+                        ? row.participants.join(", ")
+                        : "no activity"}
+                    </td>
+                    <td className="px-4 py-3 text-ink-2">
+                      {STATUS_LABEL[row.status] ?? row.status}
+                    </td>
+                    <td className="mono px-4 py-3 text-right text-ink-2">{row.fillCount}</td>
+                    <td className="mono px-4 py-3 text-right text-ink-2">
+                      {formatUnits(row.volume)}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      {row.latestTx ? (
+                        <a
+                          href={row.latestTx.explorer}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mono text-[0.75rem] text-ink-2 underline decoration-line-2 underline-offset-2 transition-colors hover:text-ink"
+                        >
+                          {shortHash(row.latestTx.hash)} ↗
+                        </a>
+                      ) : (
+                        <span className="mono text-[0.75rem] text-ink-3">no tx</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Panel>
+          <div className="flex flex-col gap-3 md:hidden">
+            {rows.map((row) => (
+              <Panel key={row.marketId} className="p-4">
+                <div className="flex items-baseline justify-between gap-3">
+                  <div className="flex items-baseline gap-2">
                     <span className="font-medium text-ink">{row.asset}</span>
-                    <span className="mono ml-2 text-[0.75rem] text-ink-3">
+                    <span className="mono text-[0.6875rem] text-ink-3">
                       {shortMarketId(row.marketId)}
                     </span>
-                    {row.isLive ? (
-                      <span className="ml-2 text-[0.6875rem] font-medium text-live-ink">
-                        TRADING
-                      </span>
-                    ) : null}
-                  </td>
-                  <td className="mono px-4 py-3 text-[0.75rem] text-ink-2">
-                    {formatWindow(row.tradingStart, row.expiry)}
-                  </td>
-                  <td className="px-4 py-3 text-ink-2">
-                    {row.participants.length > 0
-                      ? row.participants.join(", ")
-                      : "no activity"}
-                  </td>
-                  <td className="px-4 py-3 text-ink-2">
-                    {STATUS_LABEL[row.status] ?? row.status}
-                  </td>
-                  <td className="mono px-4 py-3 text-right text-ink-2">{row.fillCount}</td>
-                  <td className="mono px-4 py-3 text-right text-ink-2">
-                    {formatUnits(row.volume)}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {row.latestTx ? (
-                      <a
-                        href={row.latestTx.explorer}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mono text-[0.75rem] text-ink-2 underline decoration-line-2 underline-offset-2 transition-colors hover:text-ink"
-                      >
-                        {shortHash(row.latestTx.hash)} ↗
-                      </a>
-                    ) : (
-                      <span className="mono text-[0.75rem] text-ink-3">no tx</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Panel>
+                  </div>
+                  {row.isLive ? (
+                    <span className="text-[0.6875rem] font-medium text-live-ink">TRADING</span>
+                  ) : (
+                    <span className="text-[0.75rem] text-ink-2">
+                      {STATUS_LABEL[row.status] ?? row.status}
+                    </span>
+                  )}
+                </div>
+                <p className="mono mt-1 text-[0.75rem] text-ink-3">
+                  {formatWindow(row.tradingStart, row.expiry)}
+                </p>
+                <p className="mt-2 text-[0.8125rem] text-ink-2">
+                  {row.participants.length > 0 ? row.participants.join(", ") : "no activity"}
+                </p>
+                <div className="mono mt-3 flex items-center justify-between gap-3 text-[0.75rem]">
+                  <span className="text-ink-2">
+                    {row.fillCount} fills · {formatUnits(row.volume)}
+                  </span>
+                  {row.latestTx ? (
+                    <a
+                      href={row.latestTx.explorer}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-ink-2 underline decoration-line-2 underline-offset-2 transition-colors hover:text-ink"
+                    >
+                      {shortHash(row.latestTx.hash)} ↗
+                    </a>
+                  ) : (
+                    <span className="text-ink-3">no tx</span>
+                  )}
+                </div>
+              </Panel>
+            ))}
+          </div>
+        </>
       ) : (
         <WaitingPanel title="No battle history">
           The ledger is empty. Battles appear when the engine records its first

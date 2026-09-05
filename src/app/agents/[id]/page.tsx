@@ -102,43 +102,42 @@ export default async function AgentPage({ params }: PageProps) {
             <div className="border-b border-line pb-2">
               <Kicker>Recent activity</Kicker>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[560px] text-left text-[0.8125rem]">
-                <tbody>
-                  {events.slice(0, 16).map((event, index) => (
-                    <tr key={index} className="border-b border-line/50 last:border-b-0">
-                      <td className="mono py-2 pr-4 text-[0.75rem] text-ink-3">
-                        {formatDate(event.occurredAt)} {formatTime(event.occurredAt)}
-                      </td>
-                      <td className="py-2 pr-4 text-[0.75rem] text-ink-3">{event.kind}</td>
-                      <td className="mono py-2 pr-4 text-ink-2">
-                        {event.side ?? event.outcome ?? event.status ?? "-"}
-                        {event.price ? ` @ ${formatPrice(event.price)}` : ""}
-                        {event.quantity ? ` × ${formatQuantity(event.quantity)}` : ""}
-                      </td>
-                      <td className="py-2 text-right">
-                        {event.explorer ? (
-                          <a
-                            href={event.explorer}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mono text-[0.75rem] text-ink-2 underline decoration-line-2 underline-offset-2 transition-colors hover:text-ink"
-                          >
-                            {shortHash(event.txHash)} ↗
-                          </a>
-                        ) : (
-                          <span className="mono text-[0.75rem] text-ink-3">-</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                  {events.length === 0 ? (
-                    <tr>
-                      <td className="py-4 text-ink-2">No recorded activity yet.</td>
-                    </tr>
-                  ) : null}
-                </tbody>
-              </table>
+            <div>
+              {events.slice(0, 16).map((event, index) => (
+                <div
+                  key={index}
+                  className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-line/50 py-2.5 last:border-b-0"
+                >
+                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                    <span className="text-[0.75rem] text-ink-3">{event.kind}</span>
+                    <span className="mono text-[0.8125rem] text-ink-2">
+                      {event.side ?? event.outcome ?? event.status ?? "-"}
+                      {event.price ? ` @ ${formatPrice(event.price)}` : ""}
+                      {event.quantity ? ` × ${formatQuantity(event.quantity)}` : ""}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-3">
+                    <span className="mono text-[0.6875rem] text-ink-3">
+                      {formatDate(event.occurredAt)} {formatTime(event.occurredAt)}
+                    </span>
+                    {event.explorer ? (
+                      <a
+                        href={event.explorer}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mono text-[0.75rem] text-ink-2 underline decoration-line-2 underline-offset-2 transition-colors hover:text-ink"
+                      >
+                        {shortHash(event.txHash)} ↗
+                      </a>
+                    ) : (
+                      <span className="mono text-[0.75rem] text-ink-3">-</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {events.length === 0 ? (
+                <p className="py-4 text-[0.8125rem] text-ink-2">No recorded activity yet.</p>
+              ) : null}
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import type { ArenaState, KillfeedEvent } from "@/lib/arena";
 import { profileFor } from "@/lib/agents";
@@ -166,7 +167,7 @@ export function ArenaLive({ initialState }: { initialState: ArenaState }) {
                 {round ? `${round.asset} window` : "no window"}
               </span>
             </div>
-            <div className="overflow-x-auto">
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full min-w-[720px] text-left text-[0.8125rem]">
                 <thead>
                   <tr className="border-b border-line">
@@ -227,6 +228,57 @@ export function ArenaLive({ initialState }: { initialState: ArenaState }) {
                 </tbody>
               </table>
             </div>
+            <div className="flex flex-col gap-3 md:hidden">
+              {roster.map((agent) => {
+                const profile = profileFor(agent.agentId);
+                const fill = latestFills.get(agent.agentId) ?? null;
+                const order = latestOrders.get(agent.agentId) ?? null;
+                const latest = latestAny.get(agent.agentId) ?? null;
+                const standing = standingsByAgent.get(agent.agentId);
+                const action = fill
+                  ? `FILL ${fill.side ?? ""}`.trim()
+                  : order
+                    ? `ORDER ${order.side ?? ""} ${order.status ?? ""}`.trim()
+                    : latest
+                      ? latest.kind
+                      : "HOLD";
+                return (
+                  <Panel key={agent.agentId} className="p-4">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <Link
+                        href={`/agents/${agent.agentId}`}
+                        className="font-medium text-ink underline decoration-line-2 underline-offset-2 transition-colors hover:decoration-ink"
+                      >
+                        {agent.agentId}
+                      </Link>
+                      <span className="mono text-[0.875rem] font-medium text-ink">
+                        {standing ? signedUnits(standing.score) : "0.000000"}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[0.75rem] text-ink-2">{profile.architecture}</p>
+                    <div className="mono mt-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-[0.8125rem]">
+                      <span className="text-ink-2">
+                        {action}
+                        {fill?.price ? ` @ ${formatPrice(fill.price)}` : ""}
+                        {fill?.quantity ? ` × ${formatQuantity(fill.quantity)}` : ""}
+                      </span>
+                      {latest?.explorer ? (
+                        <a
+                          href={latest.explorer}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[0.75rem] text-ink-2 underline decoration-line-2 underline-offset-2 transition-colors hover:text-ink"
+                        >
+                          {shortHash(latest.txHash)} ↗
+                        </a>
+                      ) : (
+                        <span className="text-[0.75rem] text-ink-3">no tx</span>
+                      )}
+                    </div>
+                  </Panel>
+                );
+              })}
+            </div>
           </div>
 
           <div className="flex flex-col gap-4">
@@ -234,7 +286,7 @@ export function ArenaLive({ initialState }: { initialState: ArenaState }) {
               <Kicker>Score derivation</Kicker>
               <span className="text-[0.75rem] text-ink-3">verified, tx-backed</span>
             </div>
-            <div className="overflow-x-auto">
+            <div className="hidden overflow-x-auto md:block">
               <table className="w-full min-w-[560px] text-left text-[0.8125rem]">
                 <thead>
                   <tr className="border-b border-line">
@@ -273,6 +325,38 @@ export function ArenaLive({ initialState }: { initialState: ArenaState }) {
                   ) : null}
                 </tbody>
               </table>
+            </div>
+            <div className="flex flex-col gap-3 md:hidden">
+              {state.standings.map((row) => (
+                <Panel key={row.agentId} className="p-4">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <span className="font-medium text-ink">{row.agentId}</span>
+                    <span className="mono text-[0.875rem] font-medium text-ink">
+                      {signedUnits(row.score)}
+                    </span>
+                  </div>
+                  <div className="mono mt-3 grid grid-cols-3 gap-2 text-[0.8125rem] text-ink-2">
+                    <div>
+                      <span className="kicker block text-ink-3">Buy</span>
+                      {signedUnits(row.buyCosts)}
+                    </div>
+                    <div>
+                      <span className="kicker block text-ink-3">Sell</span>
+                      {signedUnits(row.sellProceeds)}
+                    </div>
+                    <div>
+                      <span className="kicker block text-ink-3">Redeemed</span>
+                      {signedUnits(row.redeemedProceeds)}
+                    </div>
+                  </div>
+                </Panel>
+              ))}
+              {state.standings.length === 0 ? (
+                <p className="py-2 text-[0.8125rem] text-ink-2">
+                  No scored activity yet. Scores derive from fills and
+                  redemptions with successful receipts.
+                </p>
+              ) : null}
             </div>
             <p className="text-[0.75rem] text-ink-3">
               Score = sell proceeds + redemption proceeds − buy costs, in test

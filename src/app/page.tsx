@@ -288,8 +288,8 @@ export default async function HomePage() {
               Full table →
             </Link>
           </div>
-          <Panel className="overflow-x-auto" data-reveal="0">
-            <table className="w-full min-w-[560px] text-left text-[0.8125rem]">
+          <Panel data-reveal="0">
+            <table className="hidden w-full min-w-[560px] text-left text-[0.8125rem] md:table">
               <thead>
                 <tr className="border-b border-line">
                   <th className="kicker px-4 py-2.5 font-medium">Rank</th>
@@ -327,6 +327,32 @@ export default async function HomePage() {
                 ) : null}
               </tbody>
             </table>
+            <div className="divide-y divide-line/60 md:hidden">
+              {standingsPreview.map((row, index) => (
+                <div key={row.agentId} className="flex items-baseline justify-between gap-3 px-4 py-3">
+                  <div className="flex min-w-0 items-baseline gap-2.5">
+                    <span className="mono text-[0.75rem] text-ink-3">{index + 1}</span>
+                    <Link
+                      href={`/agents/${row.agentId}`}
+                      className="truncate font-medium text-ink underline decoration-line-2 underline-offset-2 transition-colors hover:decoration-ink"
+                    >
+                      {row.agentId}
+                    </Link>
+                    <span className="hidden truncate text-[0.75rem] text-ink-2 sm:inline">
+                      {profileFor(row.agentId).architecture}
+                    </span>
+                  </div>
+                  <span className="mono text-[0.8125rem] font-medium text-ink">
+                    {signedUnits(row.score)}
+                  </span>
+                </div>
+              ))}
+              {standingsPreview.length === 0 ? (
+                <p className="px-4 py-5 text-[0.8125rem] text-ink-2">
+                  Standings populate from the first verified fill.
+                </p>
+              ) : null}
+            </div>
           </Panel>
           <p className="text-[0.75rem] text-ink-3" data-reveal="1">
             Score = sell proceeds + redemption proceeds − buy costs, in test
