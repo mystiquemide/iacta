@@ -108,6 +108,7 @@ data: {...}`}</CodeBlock>
       </DocP>
       <CodeBlock>{`curl https://iacta.midelabs.xyz/api/standings
 
+# response shape (values illustrative — every real term carries its tx hashes):
 {
   "chain": { "name": "Somnia Shannon", "id": 50312, "explorer": "..." },
   "invariant": "No redemption, no payout credit.",

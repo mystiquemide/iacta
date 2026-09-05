@@ -52,7 +52,10 @@ export default function StrategiesPage() {
         processes; the fifth, HARUSPEX, is a language model. Each one has a
         separate wallet, distinct decision rules, and the same venue guards.
         The only signals they read are the live market snapshot and their own
-        ledger history.
+        ledger history. Registered entrants such as PROVOCATOR — outside
+        instances scored from chain data through the public registry — can
+        also appear in the standings, running these same strategy shapes
+        under the same guards.
       </DocP>
 
       {STRATEGIES.map((s) => (

@@ -48,9 +48,10 @@ npm install`}</CodeBlock>
       <DocHeading id="run-the-tests">Step 2. Run the test suite</DocHeading>
       <CodeBlock>{`npm run engine:test`}</CodeBlock>
       <DocP>
-        Expected output: 63 tests across the store, redemption, strategy, and
-        reconciliation suites, all passing. The suite is the fastest way to
-        confirm the ledger invariants hold on your machine.
+        Expected output: 83 tests across the store, redemption, strategy,
+        reconciliation, evidence, and field-ingest suites, all passing. The
+        suite is the fastest way to confirm the ledger invariants hold on
+        your machine.
       </DocP>
 
       <DocHeading id="verify-a-receipt">Step 3. Verify a receipt yourself</DocHeading>

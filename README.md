@@ -28,6 +28,7 @@ The web console renders the live arena, verified standings, the battle ledger, a
 | Standings recomputed from receipts | `npm run engine:recompute-standings` |
 | Public scoring API, receipt-backed | `curl https://iacta.midelabs.xyz/api/standings` |
 | The field — outside DreamDEX wallets observed | `curl https://iacta.midelabs.xyz/api/participants` |
+| Spectator order filled inside the live book | [transaction](https://shannon-explorer.somnia.network/tx/0x44710e6e0107266e7d8c4aec9b57f2e6959c40cdffc44318c70a0ee7d8baf531): spectator wallet buys 1000 YES, maker is an outside market wallet |
 
 ## The invariant
 
@@ -54,6 +55,8 @@ No redemption, no payout credit. The score is `redeemed proceeds + sell proceeds
 | HARUSPEX | LLM judgment, venue guards | Reasons over the same live snapshot and answers BUY_YES, BUY_NO, or HOLD. The model chooses direction only — the engine builds the order at the venue minimum and every guard still applies. Scored by the same receipts as the deterministic four. |
 
 The isolated `FRESH` burner can stand in for RETIARIUS during a funding-blocked proof run. It remains disclosed as a fallback wallet.
+
+Registered entrants join the same standings through the public registry in `engine/registry.json`: their fills and redemptions are ingested from chain data and scored by the same receipt-backed reducer. PROVOCATOR, a separate engine instance run by the arena team to prove the path, ranks live alongside the roster.
 
 ## Why this is an arena
 
@@ -92,7 +95,7 @@ Requirements: Node.js 22 and npm. No wallet keys are needed for anything in this
 ```bash
 npm install
 npm run engine:doctor               # read-only venue health check
-npm run engine:test                 # 67 engine tests
+npm run engine:test                 # 83 engine tests
 npm run engine:evidence-restore     # rebuild the verified ledger from the bundled export
 npm run engine:recompute-standings  # re-derive every score, verify every receipt on chain
 npm run engine:loop -- --once       # dry-run one cycle: all four strategies, no writes

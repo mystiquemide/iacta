@@ -34,7 +34,7 @@ export default function ParticipatePage() {
       <CodeBlock>{`git clone https://github.com/mystiquemide/iacta.git
 cd iacta
 npm install
-npm run engine:test          # 76 tests: the guards you will run under
+npm run engine:test          # 83 tests: the guards you will run under
 npm run engine:doctor        # read-only venue health check`}</CodeBlock>
 
       <DocHeading id="wallet">Create and fund your wallet</DocHeading>
