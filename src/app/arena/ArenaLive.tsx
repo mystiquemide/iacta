@@ -77,6 +77,7 @@ export default function ArenaLive({ initialState }: { initialState: ArenaState }
         </Link>
         <div className="arena-nav-links">
           <Link className="nav-link" href="/">Home</Link>
+          <Link className="nav-link" href="/standings">Standings</Link>
           <a className="nav-link" href={state.chain.explorer} target="_blank" rel="noreferrer">
             Explorer <span aria-hidden="true">↗</span>
           </a>

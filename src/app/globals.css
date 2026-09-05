@@ -417,6 +417,142 @@ h1 {
   padding: 12px 14px;
 }
 
+.proof-shell {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  gap: 38px;
+  padding: 28px clamp(20px, 5vw, 72px) 24px;
+}
+
+.standings-heading {
+  align-items: end;
+  display: flex;
+  gap: 32px;
+  justify-content: space-between;
+  padding: 42px 0 0;
+}
+
+.standings-heading h1 {
+  font-size: clamp(3rem, 8vw, 7rem);
+  max-width: none;
+}
+
+.standings-copy {
+  color: var(--arena-muted);
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 24px 0 0;
+  max-width: 520px;
+}
+
+.standings-panel {
+  background: var(--arena-panel);
+  border: 1px solid var(--arena-line);
+  padding: 20px;
+}
+
+.standings-panel-head {
+  align-items: end;
+  border-bottom: 1px solid var(--arena-line);
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 16px;
+}
+
+.standings-panel-head h2 {
+  font-size: 22px;
+  letter-spacing: 0.05em;
+  margin: 7px 0 0;
+}
+
+.standings-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.standings-row {
+  align-items: center;
+  border-bottom: 1px solid var(--arena-line);
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 42px minmax(150px, 1fr) 120px minmax(160px, 0.8fr) minmax(180px, 1.2fr);
+  min-height: 94px;
+}
+
+.standings-row:last-child {
+  border-bottom: 0;
+}
+
+.standing-rank,
+.standing-agent span,
+.standing-breakdown,
+.standing-proof,
+.proof-empty {
+  color: var(--arena-muted);
+  font-family: "Courier New", monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.standing-agent h3 {
+  font-size: 17px;
+  letter-spacing: 0.03em;
+  margin: 0 0 8px;
+}
+
+.standing-score {
+  align-items: baseline;
+  display: flex;
+  gap: 6px;
+  font-family: "Courier New", monospace;
+  font-size: 25px;
+}
+
+.standing-score small {
+  color: var(--arena-muted);
+  font-size: 9px;
+}
+
+.score-positive {
+  color: #7ed4a0;
+}
+
+.score-negative {
+  color: var(--arena-red);
+}
+
+.score-flat {
+  color: var(--arena-gold);
+}
+
+.standing-breakdown,
+.standing-proof {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  line-height: 1.35;
+}
+
+.standing-proof a {
+  color: var(--arena-muted);
+  text-decoration: none;
+}
+
+.standing-proof a:hover,
+.standing-proof a:focus-visible {
+  color: var(--arena-bone);
+}
+
+.proof-disclaimer {
+  color: var(--arena-muted);
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  line-height: 1.5;
+  margin: -14px 0 0;
+}
+
 @media (max-width: 600px) {
   .landing-shell {
     padding: 20px 18px 18px;
@@ -447,6 +583,12 @@ h1 {
   }
 
   .arena-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .standings-heading {
     align-items: flex-start;
     flex-direction: column;
     gap: 20px;
@@ -494,6 +636,28 @@ h1 {
   .killfeed-row .mint-badge {
     grid-column: 2 / -1;
     justify-self: start;
+  }
+
+  .standings-panel-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .standings-row {
+    align-items: start;
+    gap: 10px;
+    grid-template-columns: 30px 1fr auto;
+    padding: 18px 0;
+  }
+
+  .standing-score {
+    font-size: 21px;
+  }
+
+  .standing-breakdown,
+  .standing-proof {
+    grid-column: 2 / -1;
   }
 
   .site-footer {
