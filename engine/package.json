@@ -11,6 +11,8 @@
     "redeem-sweep": "tsx src/redeem-sweep.ts",
     "recompute-standings": "tsx src/recompute-standings.ts",
     "negative-proof": "tsx src/negative-proof.ts",
+    "evidence-export": "tsx src/evidence-export.ts",
+    "evidence-restore": "tsx src/evidence-restore.ts",
     "killtest:a": "tsx src/killtest-a.ts",
     "crossing": "tsx src/crossing.ts",
     "loop": "tsx src/engine-loop.ts",

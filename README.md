@@ -4,7 +4,7 @@ Autonomous strategy agents compete on live DreamDEX event-contract windows on So
 
 The web console renders the live arena, verified standings, the battle ledger, and agent tear sheets from the local event ledger. When the engine loop is not running, it says so instead of inventing data.
 
-[Somnia Shannon](https://shannon-explorer.somnia.network) · chain `50312` · [`@somnia-chain/markets-sdk` 0.29.0](https://www.npmjs.com/package/@somnia-chain/markets-sdk)
+**Live console:** [iacta.159.69.241.122.sslip.io](https://iacta.159.69.241.122.sslip.io) · [Somnia Shannon](https://shannon-explorer.somnia.network) · chain `50312` · [`@somnia-chain/markets-sdk` 0.29.0](https://www.npmjs.com/package/@somnia-chain/markets-sdk)
 
 ## The arena in 30 seconds
 
@@ -62,16 +62,18 @@ Every claim above can be checked from the proof table without trusting this repo
 
 ## Run it yourself
 
-Requirements: Node.js 22 and npm.
+Requirements: Node.js 22 and npm. No wallet keys are needed for anything in this section.
 
 ```bash
 npm install
-npm run engine:doctor
-npm run engine:test
-npm run engine:redeem-sweep -- --dry-run
-npm run engine:recompute-standings
-npm run engine:negative-proof
+npm run engine:doctor               # read-only venue health check
+npm run engine:test                 # 67 engine tests
+npm run engine:evidence-restore     # rebuild the verified ledger from the bundled export
+npm run engine:recompute-standings  # re-derive every score, verify every receipt on chain
+npm run engine:loop -- --once       # dry-run one cycle: all four strategies, no writes
 ```
+
+`engine/evidence/verified-ledger.json` is the exported event ledger: every fill, redemption, and refusal with its transaction hash, exported only after each receipt was re-verified on chain. Restoring it gives you the exact battle history the live console shows, and `recompute-standings` then re-derives the same scores from those receipts.
 
 The web console reads the same verified ledger and renders the arena, standings, battles, and agent tear sheets:
 
@@ -80,13 +82,7 @@ npm run dev      # development
 npm run build && npm start   # production
 ```
 
-The loop defaults to read-only dry-run mode:
-
-```bash
-npm run engine:loop -- --once
-```
-
-To place guarded testnet orders, generate isolated burner wallets, fund their collateral, and opt in explicitly:
+To place guarded testnet orders, generate isolated burner wallets, fund their collateral, and opt in explicitly (wallet keys live only in the ignored `engine/.env.local`):
 
 ```bash
 npm run engine:wallets
@@ -98,7 +94,7 @@ Use `IACTA_LOOP_ROLES=FRESH,SECUTOR` for the disclosed two-wallet fallback. The 
 
 The engine uses a 3M gas ceiling and 9 gwei fee cap by default so a 0.05 STT burner can cover a bounded collateral, approval, order, and redemption path. These settings are configurable through `IACTA_WRITE_GAS_LIMIT` and `IACTA_MAX_FEE_PER_GAS`. The node only charges gas actually used, but its balance check considers the signed transaction envelope.
 
-`npm run engine:negative-proof` submits one future-dated order to a real finalized round, records the reverted receipt with the venue's named refusal reason, and exits. It is a bounded testnet write for the locked-market refusal artifact.
+`npm run engine:negative-proof` submits one future-dated order to a real finalized round, records the reverted receipt with the venue's named refusal reason, and exits. It is a bounded testnet write for the locked-market refusal artifact and needs the funded SECUTOR burner; the receipt it produced is already in the proof table above and in the bundled evidence export.
 
 Public endpoints can be changed through `.env.example`. Burner keys belong only in the ignored `engine/.env.local` file. The event ledger is stored locally at `engine/data/iacta.db`.
 

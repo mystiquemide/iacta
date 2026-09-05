@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -25,6 +26,28 @@ async function loadEngine(): Promise<EngineModule> {
   )) as EngineModule;
 }
 
+/**
+ * Fresh clones have no runtime ledger. The repository ships a verified
+ * evidence export (every receipt re-verified on chain at export time), so the
+ * console falls back to it and renders real, receipt-backed history instead
+ * of an empty state.
+ */
+async function readBundledEvidence(): Promise<ArenaState | null> {
+  try {
+    const path = resolve(process.cwd(), "engine", "evidence", "verified-ledger.json");
+    if (!existsSync(path)) return null;
+    const evidence = JSON.parse(readFileSync(path, "utf8")) as {
+      version: number;
+      snapshot: Parameters<EngineModule["buildArenaState"]>[0];
+    };
+    if (evidence.version !== 1) return null;
+    const engine = await loadEngine();
+    return engine.buildArenaState(evidence.snapshot, null);
+  } catch {
+    return null;
+  }
+}
+
 export type ArenaLoadResult =
   | { ok: true; state: ArenaState }
   | { ok: false; error: string };
@@ -32,14 +55,22 @@ export type ArenaLoadResult =
 export async function loadArenaState(): Promise<ArenaLoadResult> {
   try {
     return { ok: true, state: (await loadEngine()).readArenaState() };
-  } catch (error) {
+  } catch {
+    const evidence = await readBundledEvidence();
+    if (evidence) return { ok: true, state: evidence };
     return {
       ok: false,
-      error: error instanceof Error ? error.message : "Arena state is unavailable.",
+      error: "Arena state is unavailable. Run the engine or restore the verified evidence bundle.",
     };
   }
 }
 
 export async function readEngineArenaState(): Promise<ArenaState> {
-  return (await loadEngine()).readArenaState();
+  try {
+    return (await loadEngine()).readArenaState();
+  } catch {
+    const evidence = await readBundledEvidence();
+    if (evidence) return evidence;
+    throw new Error("Arena state is unavailable and no verified evidence bundle is present.");
+  }
 }

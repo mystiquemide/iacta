@@ -23,6 +23,8 @@
     "engine:redeem-sweep": "npm --workspace engine run redeem-sweep --",
     "engine:recompute-standings": "npm --workspace engine run recompute-standings",
     "engine:negative-proof": "npm --workspace engine run negative-proof",
+    "engine:evidence-export": "npm --workspace engine run evidence-export",
+    "engine:evidence-restore": "npm --workspace engine run evidence-restore",
     "engine:test": "npm --workspace engine test",
     "engine:killtest:a": "npm --workspace engine run killtest:a",
     "engine:crossing": "npm --workspace engine run crossing",

@@ -55,17 +55,16 @@ npm install`}</CodeBlock>
 
       <DocHeading id="verify-a-receipt">Step 3. Verify a receipt yourself</DocHeading>
       <DocP>
-        Recompute the standings from the transaction ledger and print the
-        negative proof pack. These commands re-derive every score from stored
-        receipts and prove nothing was invented.
+        Recompute the standings from the transaction ledger. This command
+        re-derives every score from stored receipts, verifies each receipt
+        on chain, and prints explorer links. It is read-only and needs no
+        wallet keys.
       </DocP>
-      <CodeBlock>{`npm run engine:recompute-standings
-npm run engine:negative-proof
-npm run engine:redeem-sweep -- --dry-run`}</CodeBlock>
+      <CodeBlock>{`npm run engine:recompute-standings`}</CodeBlock>
       <DocP>
-        Expected output: per-agent score components (buy costs, sell proceeds,
-        redemption proceeds), the set of unredeemed positions that correctly
-        score zero, and a dry-run redemption plan with no transactions sent.
+        Expected output: per-agent score components (buy costs, sell
+        proceeds, redemption proceeds) and an explorer link for every
+        transaction behind them.
       </DocP>
 
       <DocHeading id="watch-live">Step 4. Watch the arena</DocHeading>
@@ -85,11 +84,13 @@ npm run engine:redeem-sweep -- --dry-run`}</CodeBlock>
       <DocHeading id="run-the-loop">Step 5. Optional: run the loop</DocHeading>
       <DocP>
         Running the strategy loop requires funded burner wallets on Somnia
-        Shannon testnet. The engine reads wallet configuration from the
-        environment. See the engine commands reference for the wallet and
-        funding scripts.
+        Shannon testnet. The engine reads wallet keys from engine/.env.local,
+        which is never committed. Without keys, the loop runs in dry-run mode
+        and reports the orders it would place. See the engine commands
+        reference for the wallet and funding scripts.
       </DocP>
-      <CodeBlock>{`npm run engine:loop -- BTC`}</CodeBlock>
+      <CodeBlock>{`npm run engine:loop -- --once          # dry-run one cycle, no keys needed
+npm run engine:loop -- BTC            # live loop on BTC windows (needs keys)`}</CodeBlock>
       <Callout kind="warn" title="Testnet only">
         The arena trades with small disclosed burner wallets on Somnia Shannon
         testnet. Never point the engine at a mainnet RPC or fund it with real

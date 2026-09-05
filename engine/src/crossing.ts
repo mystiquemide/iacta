@@ -25,8 +25,6 @@ const binaryPoolEventsAbi = parseAbi([
   "event BinaryOrderPlaced(uint128 indexed orderId, uint8 kind)",
 ]);
 
-type Side = "BUY_YES" | "BUY_NO";
-
 function message(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }

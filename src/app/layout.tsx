@@ -24,7 +24,7 @@ const description =
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ?? "https://easily-synergy-canopener.ngrok-free.dev",
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://iacta.159.69.241.122.sslip.io",
   ),
   title: {
     default: "IACTA | Onchain Trading Arena",

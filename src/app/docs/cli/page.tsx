@@ -17,9 +17,9 @@ const COMMANDS: { cmd: string; purpose: string; note: string }[] = [
   { cmd: "engine:crossing", purpose: "Pair-crossing proof", note: "Executes a guarded crossing proof against the live venue." },
   { cmd: "engine:killtest:a", purpose: "Single-agent IOC proof", note: "On-chain-gated immediate-or-cancel proof run for one agent." },
   { cmd: "engine:loop", purpose: "Run the strategy loop", note: "The heartbeat-driven autonomous loop. Takes the loop asset as an argument, for example BTC." },
-  { cmd: "engine:redeem-sweep", purpose: "Redeem settled positions", note: "Plans and executes redemptions. Supports --dry-run to plan without sending." },
-  { cmd: "engine:recompute-standings", purpose: "Re-derive all scores", note: "Recomputes every score from receipt-backed ledger rows." },
-  { cmd: "engine:negative-proof", purpose: "Print the negative proof pack", note: "Lists unredeemed positions, external wallets, and data warnings." },
+  { cmd: "engine:redeem-sweep", purpose: "Redeem settled positions", note: "Plans and executes redemptions. Needs wallet keys. Supports --dry-run to plan without sending." },
+  { cmd: "engine:recompute-standings", purpose: "Re-derive all scores", note: "Recomputes every score from receipt-backed ledger rows. Read-only, no keys needed." },
+  { cmd: "engine:negative-proof", purpose: "Locked-market refusal proof", note: "Submits one deliberately invalid order to a finalized market and records the on-chain revert. Needs the SECUTOR key and a small amount of testnet gas." },
 ];
 
 export default function CliPage() {

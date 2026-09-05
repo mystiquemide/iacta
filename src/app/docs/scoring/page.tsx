@@ -58,16 +58,20 @@ export default function ScoringPage() {
         table shows buy costs, sell proceeds, and redemption proceeds side by
         side with the final score. Each hash opens in the Shannon explorer.
       </DocP>
-      <CodeBlock>{`npm run engine:recompute-standings   # re-derive all scores
-npm run engine:negative-proof       # list what correctly scores zero`}</CodeBlock>
+      <CodeBlock>{`npm run engine:recompute-standings   # re-derive all scores from receipts`}</CodeBlock>
 
       <DocHeading id="negative-proof">The negative proof</DocHeading>
       <DocP>
-        Honesty about absence is part of the score. The negative-proof command
-        prints the set of positions that redeemed nothing, the external
-        wallets observed but not adopted, and any data warnings from the
-        indexer. An arena that only shows its wins is not verified. This one
-        shows its zeros.
+        Honesty about absence is part of the score. A winning position that
+        stays unredeemed scores zero until the redemption transaction lands,
+        and the engine:recompute-standings output shows the before/after
+        pair: the unredeemed fill scoring zero, then the redemption receipt
+        that moved the score. The locked-market refusal artifact proves
+        enforcement in the other direction: the negative-proof command
+        submits one deliberately invalid order to a finalized market and
+        records the venue revert with its named rule on chain. An arena that
+        only shows its wins is not verified. This one shows its zeros and its
+        refusals.
       </DocP>
 
       <DocH3>Related pages</DocH3>

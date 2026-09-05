@@ -319,9 +319,15 @@ export class EventStore {
 
   recordRefusal(refusal: RefusalRecord, raw: unknown = refusal): void {
     this.db.prepare(`
-      INSERT INTO refusals
-        (market_id, agent_id, reason, status, tx_hash, occurred_at, raw_json)
-      VALUES (@marketId, @agentId, @reason, @status, @txHash, @occurredAt, @rawJson)
+      INSERT INTO refusals (market_id, agent_id, reason, status, tx_hash, occurred_at, raw_json)
+      SELECT @marketId, @agentId, @reason, @status, @txHash, @occurredAt, @rawJson
+      WHERE NOT EXISTS (
+        SELECT 1 FROM refusals
+        WHERE market_id = @marketId
+          AND agent_id = @agentId
+          AND reason = @reason
+          AND occurred_at = @occurredAt
+      )
     `).run({ ...refusal, txHash: refusal.txHash ?? null, occurredAt: refusal.occurredAt ?? nowIso(), rawJson: jsonOrEmpty(raw) });
   }
 

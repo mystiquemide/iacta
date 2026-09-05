@@ -700,6 +700,13 @@ function delay(milliseconds: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
+function loopAssetFromArgv(): string | undefined {
+  const positional = process.argv
+    .slice(2)
+    .find((value) => !value.startsWith("--") && /^[A-Za-z]{2,10}$/.test(value));
+  return positional?.trim().toUpperCase();
+}
+
 async function main(): Promise<void> {
   loadLocalEnv();
   const dryRun = !process.argv.includes("--live");
@@ -714,7 +721,7 @@ async function main(): Promise<void> {
     refusalTimes: new Map(),
     pausedRoles: new Set(),
     refusalCooldownMs: parsePositiveNumber(process.env.IACTA_LOOP_REFUSAL_COOLDOWN_MS, DEFAULT_REFUSAL_COOLDOWN_MS),
-    asset: (process.env.IACTA_LOOP_ASSET ?? "BTC").trim().toUpperCase(),
+    asset: (process.env.IACTA_LOOP_ASSET ?? loopAssetFromArgv() ?? "BTC").trim().toUpperCase(),
     marketLimit: parsePositiveNumber(process.env.IACTA_LOOP_MARKET_LIMIT, DEFAULT_MARKET_LIMIT, 100),
     preferredVenue: process.env.IACTA_LOOP_VENUE_ID?.trim() || undefined,
     redemptionIntervalMs: parsePositiveNumber(process.env.IACTA_LOOP_REDEMPTION_INTERVAL_MS, DEFAULT_REDEMPTION_INTERVAL_MS, 86_400_000),
