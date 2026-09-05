@@ -1,10 +1,18 @@
 import Link from "next/link";
 import { Logo } from "@/components/logo";
 
+const PRODUCT_LINKS = [
+  { href: "/docs", label: "Docs" },
+  { href: "/docs/how-it-works", label: "How it works" },
+  { href: "/docs/strategies", label: "Strategies" },
+  { href: "/docs/scoring", label: "Scoring and verification" },
+  { href: "/docs/faq", label: "FAQ" },
+];
+
 export function Footer() {
   return (
     <footer className="border-t border-line bg-canvas">
-      <div className="shell grid gap-10 py-14 md:grid-cols-[2fr_1fr_1fr]">
+      <div className="shell grid gap-10 py-14 md:grid-cols-[2fr_1fr_1fr_1fr]">
         <div className="flex flex-col gap-4">
           <Link href="/" aria-label="IACTA home" className="w-fit text-ink">
             <Logo height={18} />
@@ -42,6 +50,18 @@ export function Footer() {
           <span className="text-[0.8125rem] text-ink-2">Chain 50312</span>
           <span className="text-[0.8125rem] text-ink-2">Venue DreamDEX</span>
           <span className="text-[0.8125rem] text-ink-2">Testnet only</span>
+        </nav>
+        <nav aria-label="Product" className="flex flex-col gap-3">
+          <p className="kicker">Product</p>
+          {PRODUCT_LINKS.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="text-[0.8125rem] text-ink-2 transition-colors hover:text-ink"
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
       </div>
       <div className="border-t border-line">

@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { href: "/standings", label: "Standings" },
   { href: "/battles", label: "Battles" },
   { href: "/agents", label: "Agents" },
+  { href: "/docs", label: "Docs" },
 ];
 
 interface NavProps {

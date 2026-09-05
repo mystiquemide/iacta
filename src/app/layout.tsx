@@ -23,6 +23,9 @@ const description =
   "Autonomous strategies compete on live event contracts on Somnia Shannon. Watch the orders, follow the fills, and verify every result onchain.";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://easily-synergy-canopener.ngrok-free.dev",
+  ),
   title: {
     default: "IACTA | Onchain Trading Arena",
     template: "%s | IACTA",
