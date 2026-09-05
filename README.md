@@ -2,16 +2,14 @@
 
 Autonomous strategy agents compete on live DreamDEX event-contract windows on Somnia Shannon. The chain records the battle, and every score points back to a transaction.
 
-[Watch the arena](https://easily-synergy-canopener.ngrok-free.dev/arena) · [Somnia Shannon](https://shannon-explorer.somnia.network) · chain `50312` · [`@somnia-chain/markets-sdk` 0.29.0](https://www.npmjs.com/package/@somnia-chain/markets-sdk)
-
-The arena preview uses a temporary ngrok tunnel. Its availability depends on the local preview process.
+[Somnia Shannon](https://shannon-explorer.somnia.network) · chain `50312` · [`@somnia-chain/markets-sdk` 0.29.0](https://www.npmjs.com/package/@somnia-chain/markets-sdk)
 
 ## The arena in 30 seconds
 
-- Spectators need no wallet connection. The board reads the verified local event ledger.
-- Four distinct strategies inspect live binary markets, pass on-chain status and price-grid guards, and place testnet orders when their wallets are funded.
-- Fills, mint-a-pair crossings, redemptions, and refusals appear with explorer links.
-- Wallets found in indexed DreamDEX fills outside the IACTA roster are shown as external participants. Ownership and strategy remain unverified.
+- Four distinct strategies inspect live binary markets, pass on-chain status and price-grid guards, and place testnet orders from isolated wallets when they are funded.
+- Fills, mint-a-pair crossings, redemptions, and refusals are recorded in a transaction-linked ledger, each with an explorer receipt.
+- Standings are recomputed from venue redemption receipts, never self-reported, and every stored receipt is re-verified on chain before it counts.
+- Wallets found in indexed DreamDEX fills outside the IACTA roster are classified as external participants. Ownership and strategy remain unverified.
 
 ## Verified proof
 
@@ -21,11 +19,13 @@ The arena preview uses a temporary ngrok tunnel. Its availability depends on the
 | FRESH and SECUTOR mint-a-pair crossing | [transaction](https://shannon-explorer.somnia.network/tx/0x199f1edb5591bd5a8af5f994ac06dc302158223c357e7d4d99cb563a304b46ed) |
 | SECUTOR redemption | [transaction](https://shannon-explorer.somnia.network/tx/0xa173604cc9ca85930bf12650c096278c33e71ad4bdc84bb988edad4d83f26dd4) |
 | Autonomous FRESH order | [transaction](https://shannon-explorer.somnia.network/tx/0xb9dded887a0a62b86bf3df2c9d59f21dbaf723a0d471dd6153eed479d2570365) |
-| Current spectator surface | [arena preview](https://easily-synergy-canopener.ngrok-free.dev/arena) |
+| Unredeemed winnings score zero until redeemed | [fill](https://shannon-explorer.somnia.network/tx/0x861b18414c49ac238577136a64b5714c4d77efde098e25bac076386c30f2db26) → [redemption](https://shannon-explorer.somnia.network/tx/0x6e081011a1f994f59811f12eedafac74ee1e58f58b5b7050fde2d33b51b7d51f): SECUTOR −511 → +489 |
+| Locked-market order refused by the venue | [reverted transaction](https://shannon-explorer.somnia.network/tx/0x1b7e226f26c635bab5f1a4c3fb2f874949cb28e368d009b28af7c63a358b2e25): `TradingNotActive` |
+| Standings recomputed from receipts | `npm run engine:recompute-standings` |
 
 ## The invariant
 
-No redemption, no payout credit. The score is `redeemed proceeds + sell proceeds - buy costs`, and every term is backed by a successful transaction receipt.
+No redemption, no payout credit. The score is `redeemed proceeds + sell proceeds - buy costs`, and every term is backed by a successful transaction receipt. A winning position that has not been redeemed contributes exactly what it redeemed: nothing.
 
 ## How it works
 
@@ -35,12 +35,13 @@ No redemption, no payout credit. The score is `redeemed proceeds + sell proceeds
 4. Recheck on-chain status, expiry headroom, tick grid, lot grid, and collateral before every order.
 5. Record only successful order and fill receipts in the SQLite ledger.
 6. Sweep settled positions, verify `Redeemed` events, and recompute standings from the receipts.
+7. Reconcile each wallet's recent on-chain orders and fills at startup, so a crash, restart, or lost response cannot lose a receipt.
 
 ## The gladiators
 
 | Agent | Architecture | Behavior |
 | --- | --- | --- |
-| RETIARIUS | Two-sided quoting | Posts opposing YES and NO quotes around the live midpoint. |
+| RETIARIUS | Two-sided quoting | Posts opposing YES and NO quotes at non-crossing prices around the live midpoint. |
 | SECUTOR | Momentum IOC | Follows recent direction and crosses the best available level. |
 | THRAEX | Mean reversion | Fades a move when the latest YES price is extended from its recent mean. |
 | MURMILLO | Conservative minimum lot | Trades only in a narrow, stable window with the venue minimum quantity. |
@@ -51,10 +52,11 @@ The isolated `FRESH` burner can stand in for RETIARIUS during a funding-blocked 
 
 | | IACTA | Desk-style product | Gamified app |
 | --- | --- | --- | --- |
-| Primary view | Public battle board | Private strategy report | User activity feed |
 | Score source | Venue fills and redemptions | Self-reported or paper PnL | App points |
 | Sponsor mechanism | DreamDEX mint-a-pair is visible | Usually hidden behind an adapter | Not required |
-| Wallet UX | No wallet needed to watch | Often operator-focused | Often account-focused |
+| Verification | Every claim is an explorer link | Often operator-only | Not required |
+
+Every claim above can be checked from the proof table without trusting this repository.
 
 ## Run it yourself
 
@@ -87,7 +89,7 @@ Use `IACTA_LOOP_ROLES=FRESH,SECUTOR` for the disclosed two-wallet fallback. The 
 
 The engine uses a 3M gas ceiling and 9 gwei fee cap by default so a 0.05 STT burner can cover a bounded collateral, approval, order, and redemption path. These settings are configurable through `IACTA_WRITE_GAS_LIMIT` and `IACTA_MAX_FEE_PER_GAS`. The node only charges gas actually used, but its balance check considers the signed transaction envelope.
 
-`npm run engine:negative-proof` submits one deliberately expired order to a real finalized round, records the reverted receipt, and exits. It is a bounded testnet write for the locked-market refusal artifact.
+`npm run engine:negative-proof` submits one future-dated order to a real finalized round, records the reverted receipt with the venue's named refusal reason, and exits. It is a bounded testnet write for the locked-market refusal artifact.
 
 Public endpoints can be changed through `.env.example`. Burner keys belong only in the ignored `engine/.env.local` file. The event ledger is stored locally at `engine/data/iacta.db`.
 
@@ -99,14 +101,14 @@ The core lineup is four deterministic autonomous strategy processes, not an LLM.
 
 ### Are the agents self-dealing?
 
-The lineup uses disclosed burner wallets funded on Somnia Shannon testnet. The verified trading proof currently includes SECUTOR and FRESH, while the loop supports the four named roles when their wallets are funded. This is transparent testnet order flow, not an adoption claim. The score cannot be self-reported because it is recomputed from venue redemption receipts.
+The lineup uses disclosed burner wallets funded on Somnia Shannon testnet. The verified ledger includes fills attributed to SECUTOR, FRESH, RETIARIUS, and THRAEX; MURMILLO has not yet traded. This is transparent testnet order flow, not an adoption claim. The score cannot be self-reported because it is recomputed from venue redemption receipts.
 
 ### Why no custom contracts?
 
-DreamDEX already supplies the market, pool, mint-a-pair path, settlement, and redemption layer. IACTA adds the strategy loop and spectator surface, so the sponsor venue remains the contract surface and the explorer remains the audit log.
+DreamDEX already supplies the market, pool, mint-a-pair path, settlement, and redemption layer. IACTA adds the strategy loop and the receipt ledger, so the sponsor venue remains the contract surface and the explorer remains the audit log.
 
 ### What does an external participant prove?
 
-Only that a wallet appeared as a maker or taker in indexed DreamDEX fills. The UI does not infer its owner, bot status, or strategy.
+Only that a wallet appeared as a maker or taker in indexed DreamDEX fills. IACTA does not infer its owner, bot status, or strategy.
 
-The chain keeps score. Come watch it happen.
+The chain keeps score. Verify every claim yourself.
