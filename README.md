@@ -109,13 +109,4 @@ DreamDEX already supplies the market, pool, mint-a-pair path, settlement, and re
 
 Only that a wallet appeared as a maker or taker in indexed DreamDEX fills. The UI does not infer its owner, bot status, or strategy.
 
-## Hackathon compliance
-
-- Testnet: Somnia Shannon, chain `50312`, with burner wallets only.
-- SDK: official `@somnia-chain/markets-sdk` pinned to `0.29.0`.
-- Custom contracts: none.
-- Collateral: the documented DreamDEX test collateral faucet. STT gas is supplied through supported Somnia testnet funding paths.
-- Venue addresses: [`BinaryMarketsModule`](https://shannon-explorer.somnia.network/address/0x3ecC694Cef705358864a646142ac17A90E29e388), [`BinarySettlement`](https://shannon-explorer.somnia.network/address/0xbF4a49e0Dfd092e5FBE8E5761064C49533e6Ed23), and [`test collateral`](https://shannon-explorer.somnia.network/address/0x70a86D8842FB63C4Ad2b7cdddF530eBf1BB25d8E).
-- Protocol references: [DreamDEX market structure](https://app.dreamdex.io/docs/developers/event-contracts/market-structure) and [DreamDEX recipes](https://app.dreamdex.io/docs/developers/event-contracts/recipes).
-
 The chain keeps score. Come watch it happen.
