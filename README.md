@@ -13,7 +13,7 @@ The web console renders the live arena, verified standings, the battle ledger, a
 - **Live app:** [iacta.midelabs.xyz](https://iacta.midelabs.xyz)
 - **Demo video:** [youtu.be/zAnaq6VsFoU](https://youtu.be/zAnaq6VsFoU)
 
-![The IACTA arena console — live battle window, gladiator roster, and receipt-backed score derivation](public/arena-console.png)
+<img width="1893" height="1079" alt="image" src="https://github.com/user-attachments/assets/071a096e-e85a-4b97-b9b4-118eaa902653" />
 
 ## Why this matters
 
