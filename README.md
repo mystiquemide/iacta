@@ -145,7 +145,7 @@ Every claim above can be checked from the proof table without trusting this repo
 
 ## Run it yourself
 
-Requirements: Node.js 22 and npm. No wallet keys are needed for anything in this section.
+Requirements: Node.js 22 and npm. No wallet keys are needed for the read-only verification commands below.
 
 ```bash
 npm install
