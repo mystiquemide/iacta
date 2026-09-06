@@ -58,10 +58,20 @@ export function battleRows(state: ArenaState): BattleRow[] {
       volumeRaw += (price * quantity) / BigInt(QUOTE_ONE);
     }
     const latest = fills.find((event) => event.explorer !== null) ?? null;
+    // The stored status is the venue status when the round was first seen and
+    // is never updated, so the display status is derived from the window:
+    // live means trading, an expired window reads Closed regardless of the
+    // stale first-seen status.
+    const nowSeconds = Math.floor(new Date(state.generatedAt).getTime() / 1_000);
+    const derivedStatus = round.isLive
+      ? "Trading"
+      : round.expiry <= nowSeconds
+        ? "Closed"
+        : round.status;
     return {
       marketId: round.marketId,
       asset: round.asset,
-      status: round.status,
+      status: derivedStatus,
       tradingStart: round.tradingStart,
       expiry: round.expiry,
       participants,

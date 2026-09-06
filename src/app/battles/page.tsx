@@ -14,6 +14,7 @@ export const dynamic = "force-dynamic";
 const STATUS_LABEL: Record<string, string> = {
   Trading: "Trading",
   Settled: "Settled",
+  Closed: "Closed",
   Pending: "Pending window",
 };
 

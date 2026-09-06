@@ -186,40 +186,46 @@ export function ArenaLive({ initialState }: { initialState: ArenaState }) {
                     const fill = latestFills.get(agent.agentId) ?? null;
                     const order = latestOrders.get(agent.agentId) ?? null;
                     const latest = latestAny.get(agent.agentId) ?? null;
+                    // One event drives both the action text and the tx link,
+                    // so a fill row never sits next to "no tx" from an
+                    // unrelated guard refusal.
+                    const shown = fill ?? order ?? latest ?? null;
                     const standing = standingsByAgent.get(agent.agentId);
-                    const action = fill
-                      ? `FILL ${fill.side ?? ""}`.trim()
-                      : order
-                        ? `ORDER ${order.side ?? ""} ${order.status ?? ""}`.trim()
-                        : latest
-                          ? latest.kind
-                          : "HOLD";
+                    const action = shown
+                      ? shown.kind === "FILL"
+                        ? `FILL ${shown.side ?? ""}`.trim()
+                        : shown.kind === "ORDER"
+                          ? `ORDER ${shown.side ?? ""} ${shown.status ?? ""}`.trim()
+                          : shown.kind
+                      : "HOLD";
                     return (
                       <tr key={agent.agentId} className="border-b border-line/60 last:border-b-0">
                         <td className="py-3 pr-4 font-medium text-ink">{agent.agentId}</td>
                         <td className="py-3 pr-4 text-ink-2">{profile.architecture}</td>
                         <td className="mono py-3 pr-4 text-ink-2">{action}</td>
                         <td className="mono py-3 pr-4 text-right text-ink-2">
-                          {fill?.price ? formatPrice(fill.price) : "-"}
+                          {shown?.kind === "FILL" && shown.price ? formatPrice(shown.price) : "-"}
                         </td>
                         <td className="mono py-3 pr-4 text-right text-ink-2">
-                          {fill?.quantity ? formatQuantity(fill.quantity) : "-"}
+                          {shown?.kind === "FILL" && shown.quantity ? formatQuantity(shown.quantity) : "-"}
                         </td>
                         <td className="mono py-3 pr-4 text-right font-medium text-ink">
                           {standing ? signedUnits(standing.score) : "0.000000"}
                         </td>
                         <td className="py-3 text-right">
-                          {latest?.explorer ? (
+                          {shown?.explorer ? (
                             <a
-                              href={latest.explorer}
+                              href={shown.explorer}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="mono text-[0.75rem] text-ink-2 underline decoration-line-2 underline-offset-2 transition-colors hover:text-ink"
                             >
-                              {shortHash(latest.txHash)} ↗
+                              {shortHash(shown.txHash)} ↗
                             </a>
                           ) : (
-                            <span className="mono text-[0.75rem] text-ink-3">no tx</span>
+                            <span className="mono text-[0.75rem] text-ink-3">
+                              {shown?.kind === "REFUSAL" ? "off-chain" : "no tx"}
+                            </span>
                           )}
                         </td>
                       </tr>
@@ -234,14 +240,15 @@ export function ArenaLive({ initialState }: { initialState: ArenaState }) {
                 const fill = latestFills.get(agent.agentId) ?? null;
                 const order = latestOrders.get(agent.agentId) ?? null;
                 const latest = latestAny.get(agent.agentId) ?? null;
+                const shown = fill ?? order ?? latest ?? null;
                 const standing = standingsByAgent.get(agent.agentId);
-                const action = fill
-                  ? `FILL ${fill.side ?? ""}`.trim()
-                  : order
-                    ? `ORDER ${order.side ?? ""} ${order.status ?? ""}`.trim()
-                    : latest
-                      ? latest.kind
-                      : "HOLD";
+                const action = shown
+                  ? shown.kind === "FILL"
+                    ? `FILL ${shown.side ?? ""}`.trim()
+                    : shown.kind === "ORDER"
+                      ? `ORDER ${shown.side ?? ""} ${shown.status ?? ""}`.trim()
+                      : shown.kind
+                  : "HOLD";
                 return (
                   <Panel key={agent.agentId} className="p-4">
                     <div className="flex items-baseline justify-between gap-3">
@@ -259,20 +266,22 @@ export function ArenaLive({ initialState }: { initialState: ArenaState }) {
                     <div className="mono mt-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-[0.8125rem]">
                       <span className="text-ink-2">
                         {action}
-                        {fill?.price ? ` @ ${formatPrice(fill.price)}` : ""}
-                        {fill?.quantity ? ` × ${formatQuantity(fill.quantity)}` : ""}
+                        {shown?.kind === "FILL" && shown.price ? ` @ ${formatPrice(shown.price)}` : ""}
+                        {shown?.kind === "FILL" && shown.quantity ? ` × ${formatQuantity(shown.quantity)}` : ""}
                       </span>
-                      {latest?.explorer ? (
+                      {shown?.explorer ? (
                         <a
-                          href={latest.explorer}
+                          href={shown.explorer}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-[0.75rem] text-ink-2 underline decoration-line-2 underline-offset-2 transition-colors hover:text-ink"
                         >
-                          {shortHash(latest.txHash)} ↗
+                          {shortHash(shown.txHash)} ↗
                         </a>
                       ) : (
-                        <span className="text-[0.75rem] text-ink-3">no tx</span>
+                        <span className="text-[0.75rem] text-ink-3">
+                          {shown?.kind === "REFUSAL" ? "off-chain refusal" : "no tx"}
+                        </span>
                       )}
                     </div>
                   </Panel>

@@ -180,6 +180,27 @@ export function buildArenaState(
 ): ArenaState {
   const engine = buildEngineState(snapshot, heartbeatAt, now);
   const rounds = buildRounds(snapshot.rounds, now, engine.status);
+  const nowSeconds = Math.floor(now.getTime() / 1_000);
+  // The featured round is the battlefield, not just the longest window: a
+  // quiet multi-day market would otherwise starve the chart, the latest-fill
+  // panel, and the header while the engine trades a different live window.
+  const latestActivityByMarket = new Map<string, string>();
+  for (const event of [...snapshot.fills, ...snapshot.orders, ...snapshot.redemptions]) {
+    const key = event.marketId.toLowerCase();
+    const at = event.occurredAt ?? "";
+    if (at > (latestActivityByMarket.get(key) ?? "")) latestActivityByMarket.set(key, at);
+  }
+  const activityScore = (round: ArenaRound): string =>
+    latestActivityByMarket.get(round.marketId.toLowerCase()) ?? "";
+  const marketIsLive = (round: ArenaRound): boolean =>
+    round.status === "Trading" && round.tradingStart <= nowSeconds && round.expiry > nowSeconds;
+  const featuredRound =
+    rounds.filter(marketIsLive).sort((left, right) =>
+      activityScore(left).localeCompare(activityScore(right)) || right.expiry - left.expiry,
+    ).at(-1)
+    ?? [...rounds].sort((left, right) => activityScore(left).localeCompare(activityScore(right))).at(-1)
+    ?? rounds[0]
+    ?? null;
   const quoteOneByMarket = new Map(
     snapshot.rounds.map((round) => [round.marketId.toLowerCase(), 10n ** BigInt(round.quoteDecimals)]),
   );
@@ -217,7 +238,7 @@ export function buildArenaState(
     generatedAt: now.toISOString(),
     chain: { name: "Somnia Shannon", id: 50312, explorer: EXPLORER_URL },
     engine,
-    round: rounds[0] ?? null,
+    round: featuredRound,
     rounds,
     counts: {
       rounds: snapshot.rounds.length,

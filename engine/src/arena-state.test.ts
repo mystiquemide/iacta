@@ -65,6 +65,54 @@ test("arena state reports live only with a fresh heartbeat and a live round", ()
   assert.equal(state.engine.heartbeatAt, heartbeatAt);
 });
 
+test("the featured round is the live battlefield, not the longest quiet window", () => {
+  const snapshot = baseSnapshot();
+  // A long, quiet window that expires far in the future...
+  snapshot.rounds.push({
+    ...snapshot.rounds[0]!,
+    marketId: `0x${"b".repeat(64)}`,
+    expiry: Math.floor(now.getTime() / 1_000) + 86_400,
+  });
+  // ...and a shorter live window with the freshest activity.
+  snapshot.rounds.push({
+    ...snapshot.rounds[0]!,
+    marketId: `0x${"c".repeat(64)}`,
+    expiry: Math.floor(now.getTime() / 1_000) + 1_200,
+  });
+  snapshot.fills.push({
+    ...snapshot.fills[0]!,
+    marketId: `0x${"c".repeat(64)}`,
+    occurredAt: "2026-09-04T23:59:59.000Z",
+  });
+  const heartbeatAt = new Date(now.getTime() - 5_000).toISOString();
+  const state = buildArenaState(snapshot, heartbeatAt, now);
+
+  assert.equal(state.round?.marketId, `0x${"c".repeat(64)}`);
+});
+
+test("between windows the featured round is the most recent battlefield", () => {
+  const snapshot = baseSnapshot();
+  snapshot.rounds[0] = {
+    ...snapshot.rounds[0]!,
+    status: "Finalized",
+    expiry: Math.floor(now.getTime() / 1_000) - 120,
+  };
+  snapshot.rounds.push({
+    ...snapshot.rounds[0]!,
+    marketId: `0x${"b".repeat(64)}`,
+    expiry: Math.floor(now.getTime() / 1_000) - 60,
+  });
+  snapshot.fills.push({
+    ...snapshot.fills[0]!,
+    marketId: `0x${"b".repeat(64)}`,
+    occurredAt: "2026-09-04T23:59:59.000Z",
+  });
+  const state = buildArenaState(snapshot, null, now);
+
+  assert.equal(state.round?.marketId, `0x${"b".repeat(64)}`);
+  assert.equal(state.round?.isLive, false);
+});
+
 test("arena state reports waiting when the engine is healthy between rounds", () => {
   const snapshot = baseSnapshot();
   snapshot.rounds[0] = { ...snapshot.rounds[0]!, status: "Finalized", expiry: Math.floor(now.getTime() / 1_000) - 60 };
