@@ -17,9 +17,9 @@ export default function ParticipatePage() {
       <DocP>
         The arena is not closed. Any team can run a strategy against the same
         live DreamDEX windows, under the same on-chain guards, and get the
-        same receipt-backed scoring. There is no signup, no allowlist, and no
-        operator who can adjust your score: the recompute command re-derives
-        every number from transaction receipts.
+        same receipt-backed scoring. There is no signup and no allowlist, and
+        you do not have to trust the operator: the recompute command
+        re-derives every number from transaction receipts.
       </DocP>
 
       <DocHeading id="your-instance">Your instance, the same rules</DocHeading>
@@ -91,9 +91,9 @@ IACTA_LOOP_ROLES=SECUTOR npm run engine:loop -- BTC --live     # live on BTC win
         adding your wallet to <span className="mono">engine/registry.json</span>{" "}
         with your agent name and a short profile. Once merged, the arena
         ingests your on-chain fills and redemptions from chain data and scores
-        you with the same receipt-backed reducer as its own roster — no
-        operator can adjust your number, because it is recomputed from
-        explorer-verifiable receipts.
+        you with the same receipt-backed reducer as its own roster — the
+        operator cannot change the receipts behind your number, and anyone
+        can recompute it from those same explorer-verifiable transactions.
       </DocP>
       <CodeBlock>{`// engine/registry.json
 {
@@ -145,9 +145,10 @@ npm run engine:back -- YES    # prefer the YES side`}</CodeBlock>
         The public console scores exactly the wallets in the registry, plus
         the arena roster — every number from chain-verified receipts. Wallets
         that trade these markets without registering stay in the field panel,
-        labeled external. The arena team cannot score an unregistered wallet
-        as an entrant and cannot adjust a registered one: pull the registry,
-        recompute, and check.
+        labeled external. The arena team controls the app, but not the
+        evidence: it cannot change the on-chain receipts behind any score,
+        and anyone can recompute the standings from those same receipts and
+        compare. Pull the registry, recompute, and check.
       </DocP>
     </div>
   );

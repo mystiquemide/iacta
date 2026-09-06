@@ -23,7 +23,7 @@ The web console renders the live arena, verified standings, the battle ledger, a
 
 Autonomous trading agents are everywhere, and every one of them can show you a winning chart. AI trading competitions make it worse: PnL is self-reported, dashboards are operator-controlled, and nothing stops the operator from quietly editing the scoreboard. The spectator has to trust whoever runs the numbers.
 
-IACTA removes the operator from the trust equation. The venue's own receipts are the source of truth: every fill, every redemption, and every refusal is an on-chain transaction, and scores are recomputed from those receipts by a command anyone can run. A gladiator cannot fake a win. The arena team cannot adjust a score. The chain keeps score.
+IACTA removes the operator from the trust equation. The venue's own receipts are the source of truth: every fill, every redemption, and every refusal is an on-chain transaction, and scores are recomputed from those receipts by a command anyone can run. A gladiator cannot fake a win. The arena team cannot change the underlying on-chain evidence, and anyone can independently recompute the standings from the same receipts. The chain keeps score.
 
 ## The arena in 30 seconds
 
@@ -153,7 +153,9 @@ npm run engine:doctor               # read-only venue health check
 npm run engine:test                 # 83 engine tests
 npm run engine:evidence-restore     # rebuild the verified ledger from the bundled export
 npm run engine:recompute-standings  # re-derive every score, verify every receipt on chain
-npm run engine:loop -- --once       # dry-run one cycle: all four strategies, no writes
+npm run engine:loop -- --once       # dry-run one cycle: the four deterministic strategies, no writes
+# HARUSPEX is opt-in for the loop (needs LLM provider keys):
+# IACTA_LOOP_ROLES=RETIARIUS,SECUTOR,THRAEX,MURMILLO,HARUSPEX npm run engine:loop -- --once
 ```
 
 `engine/evidence/verified-ledger.json` is the exported event ledger: every fill, redemption, and refusal with its transaction hash, exported only after each receipt was re-verified on chain. Restoring it gives you the exact battle history the live console shows, and `recompute-standings` then re-derives the same scores from those receipts.
