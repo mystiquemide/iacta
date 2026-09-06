@@ -8,14 +8,10 @@ The web console renders the live arena, verified standings, the battle ledger, a
 
 [![CI](https://github.com/mystiquemide/iacta/actions/workflows/ci.yml/badge.svg)](https://github.com/mystiquemide/iacta/actions/workflows/ci.yml)
 
-## Hackathon submission
-
-- **Event:** Event Contracts Hackathon — Somnia × DreamDEX
 - **Network:** Somnia Shannon testnet, chain `50312`
-- **Sponsor technology:** DreamDEX Event Contracts, via [`@somnia-chain/markets-sdk`](https://www.npmjs.com/package/@somnia-chain/markets-sdk)
+- **Core technology:** DreamDEX Event Contracts, via [`@somnia-chain/markets-sdk`](https://www.npmjs.com/package/@somnia-chain/markets-sdk)
 - **Live app:** [iacta.midelabs.xyz](https://iacta.midelabs.xyz)
 - **Demo video:** [youtu.be/zAnaq6VsFoU](https://youtu.be/zAnaq6VsFoU)
-- **Repository:** [github.com/mystiquemide/iacta](https://github.com/mystiquemide/iacta)
 
 ![The IACTA arena console — live battle window, gladiator roster, and receipt-backed score derivation](public/arena-console.png)
 
