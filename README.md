@@ -8,6 +8,23 @@ The web console renders the live arena, verified standings, the battle ledger, a
 
 [![CI](https://github.com/mystiquemide/iacta/actions/workflows/ci.yml/badge.svg)](https://github.com/mystiquemide/iacta/actions/workflows/ci.yml)
 
+## Hackathon submission
+
+- **Event:** Event Contracts Hackathon — Somnia × DreamDEX
+- **Network:** Somnia Shannon testnet, chain `50312`
+- **Sponsor technology:** DreamDEX Event Contracts, via [`@somnia-chain/markets-sdk`](https://www.npmjs.com/package/@somnia-chain/markets-sdk)
+- **Live app:** [iacta.midelabs.xyz](https://iacta.midelabs.xyz)
+- **Demo video:** [youtu.be/zAnaq6VsFoU](https://youtu.be/zAnaq6VsFoU)
+- **Repository:** [github.com/mystiquemide/iacta](https://github.com/mystiquemide/iacta)
+
+![The IACTA arena console — live battle window, gladiator roster, and receipt-backed score derivation](public/arena-console.png)
+
+## Why this matters
+
+Autonomous trading agents are everywhere, and every one of them can show you a winning chart. AI trading competitions make it worse: PnL is self-reported, dashboards are operator-controlled, and nothing stops the operator from quietly editing the scoreboard. The spectator has to trust whoever runs the numbers.
+
+IACTA removes the operator from the trust equation. The venue's own receipts are the source of truth: every fill, every redemption, and every refusal is an on-chain transaction, and scores are recomputed from those receipts by a command anyone can run. A gladiator cannot fake a win. The arena team cannot adjust a score. The chain keeps score.
+
 ## The arena in 30 seconds
 
 - Four distinct strategies inspect live binary markets, pass on-chain status and price-grid guards, and place testnet orders from isolated wallets when they are funded.
@@ -33,6 +50,44 @@ The web console renders the live arena, verified standings, the battle ledger, a
 ## The invariant
 
 No redemption, no payout credit. The score is `redeemed proceeds + sell proceeds - buy costs`, and every term is backed by a successful transaction receipt. A winning position that has not been redeemed contributes exactly what it redeemed: nothing.
+
+## Architecture
+
+```
+        DreamDEX Event Contracts  (Somnia Shannon)
+     market windows · order book · settlement · redemption
+                          │
+                          ▼
+   Strategy Agents ── RETIARIUS · SECUTOR · THRAEX · MURMILLO
+                     HARUSPEX (LLM) · registered entrants
+                          │
+                          ▼
+   Guarded Execution ── on-chain status · tick/lot grids
+                        expiry headroom · collateral checks
+                          │
+                          ▼
+   On-chain Receipts ── every fill, redemption, and refusal
+                       is a transaction
+                          │
+                          ▼
+   IACTA Ledger ── SQLite event store: idempotent,
+                   restart-safe, explorer-linked
+                          │
+                          ▼
+   Verified Standings ── recompute from receipts
+                        evidence bundle · public scoring API
+```
+
+## Hackathon fit
+
+DreamDEX Event Contracts are not an integration bolted onto this project — they are the substrate. The event contracts provide:
+
+- **The market.** Live binary windows on BTC and ETH with a real order book, tick grid, and lot grid to trade against.
+- **The settlement.** Windows resolve on-chain, so a winning position has an unambiguous outcome.
+- **The redemption.** Payouts are venue transactions — the receipt that makes a score real.
+- **The proof surface.** Every order, fill, redemption, and even every refusal is a transaction with a named revert reason.
+
+IACTA builds the layer the venue does not have: an autonomous competition — strategies, guards, a receipt-verified ledger, and public scoring — on top of that substrate. Remove DreamDEX and there is no market, no settlement, no redemption, and no proof: nothing to compete in. Remove IACTA and the venue keeps working exactly as it does today.
 
 ## How it works
 
